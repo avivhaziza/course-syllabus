@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>סילבוס – בניית סוכנים אוטונומיים עם Claude Code</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0d14;--bg2:#0f1117;--surface:#141720;--surface2:#1a1e2e;
+  --border:#1e2235;--border-light:#2a2f48;
+  --text:#e2e4ed;--text-secondary:#9da2b9;--muted:#5c6185;
+  --accent:#818cf8;--accent2:#a78bfa;--accent3:#c084fc;
+  --green:#34d399;--blue:#60a5fa;--orange:#fbbf24;
+  --pink:#f472b6;--teal:#2dd4bf;--cyan:#22d3ee;--red:#f87171;
+  --radius:16px;--radius-sm:10px;--radius-xs:7px;
+  --shadow:0 2px 16px rgba(0,0,0,.4);--shadow-lg:0 8px 36px rgba(0,0,0,.5);
+}
+body{font-family:"Segoe UI","SF Pro Display",-apple-system,BlinkMacSystemFont,Roboto,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.75;font-size:16px;min-height:100vh}
+
+.progress-bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:999;background:rgba(255,255,255,.05)}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#818cf8,#a78bfa,#c084fc,#f472b6);transition:width .1s linear}
+
+.hero{background:linear-gradient(135deg,#0d0f1f 0%,#16103a 40%,#1e0a3c 70%,#120f2e 100%);
+  padding:60px 0 70px;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.hero::before{content:"";position:absolute;top:-30%;right:-10%;width:600px;height:600px;
+  background:radial-gradient(circle,rgba(129,140,248,.12) 0%,transparent 65%);border-radius:50%}
+.hero::after{content:"";position:absolute;bottom:-40%;left:-5%;width:500px;height:500px;
+  background:radial-gradient(circle,rgba(192,132,252,.08) 0%,transparent 65%);border-radius:50%}
+.hero-content{max-width:860px;margin:0 auto;padding:0 24px;position:relative;z-index:1;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(129,140,248,.12);
+  border:1px solid rgba(129,140,248,.2);border-radius:20px;padding:6px 18px;
+  font-size:.82rem;color:#a5b4fc;font-weight:700;margin-bottom:20px;letter-spacing:.4px}
+.hero h1{font-size:2.6rem;color:#fff;margin-bottom:10px;font-weight:900;line-height:1.2;
+  text-shadow:0 2px 30px rgba(0,0,0,.4)}
+.hero .subtitle{color:rgba(255,255,255,.55);font-size:1rem;max-width:580px;margin:0 auto 30px;line-height:1.8}
+.hero-meta{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+.hero-meta-item{display:flex;align-items:center;gap:8px;padding:8px 18px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;
+  color:rgba(255,255,255,.8);font-size:.9rem;font-weight:600}
+
+.page-wrapper{max-width:860px;margin:0 auto;padding:0 20px 80px}
+
+.section-hdr{margin:40px 0 16px;display:flex;align-items:center;gap:12px}
+.section-hdr h2{font-size:.85rem;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.section-hdr::before{content:"";display:block;height:1px;flex:1;background:var(--border)}
+
+.timeline-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;margin-bottom:4px}
+.timeline-label{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-bottom:10px;font-weight:700;letter-spacing:.3px}
+.timeline-bar{height:10px;background:var(--bg2);border-radius:99px;overflow:hidden;border:1px solid var(--border-light)}
+.timeline-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#818cf8 0%,#a78bfa 30%,#22d3ee 55%,#fbbf24 75%,#f472b6 90%);
+  width:0%;transition:width 1.6s cubic-bezier(.4,0,.2,1)}
+.timeline-segs{display:flex;margin-top:8px;gap:3px}
+.timeline-seg{height:4px;border-radius:3px;opacity:0;transition:opacity .4s}
+.seg-tags{display:flex;margin-top:12px;flex-wrap:wrap;gap:7px}
+.seg-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:7px;font-size:.75rem;font-weight:700}
+
+.chapters{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.chapter-wrap{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+
+.chapter-card{background:var(--surface);border:1px solid var(--border);
+  display:grid;grid-template-columns:76px 1fr auto auto;align-items:stretch;cursor:pointer;
+  transition:background .2s;user-select:none}
+.chapter-card:hover{background:var(--surface2)}
+.chapter-wrap.open .chapter-card{border-bottom:1px solid var(--border-light);background:var(--surface2)}
+
+.chapter-num-col{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;padding:22px 0;position:relative}
+.chapter-num-col::after{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:0 4px 4px 0}
+.ch-1 .chapter-num-col::after{background:linear-gradient(180deg,#818cf8,#6366f1)}
+.ch-2 .chapter-num-col::after{background:linear-gradient(180deg,#34d399,#10b981)}
+.ch-3 .chapter-num-col::after{background:linear-gradient(180deg,#a78bfa,#8b5cf6)}
+.ch-4 .chapter-num-col::after{background:linear-gradient(180deg,#22d3ee,#06b6d4)}
+.ch-5 .chapter-num-col::after{background:linear-gradient(180deg,#fbbf24,#f59e0b)}
+.ch-6 .chapter-num-col::after{background:linear-gradient(180deg,#f472b6,#ec4899)}
+
+.chapter-icon{font-size:1.5rem}
+.chapter-number{font-size:.68rem;font-weight:900;color:var(--muted);letter-spacing:1.5px}
+
+.chapter-body{padding:20px 22px 20px 18px;display:flex;flex-direction:column;justify-content:center;gap:3px}
+.chapter-title{font-size:1.08rem;font-weight:800;color:var(--text);margin:0}
+.chapter-desc{font-size:.87rem;color:var(--text-secondary);margin:0;line-height:1.5}
+.chapter-outcome{display:inline-flex;align-items:center;gap:6px;margin-top:7px;font-size:.82rem;font-weight:700}
+.chapter-outcome .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+.chapter-time-col{display:flex;align-items:center;justify-content:center;padding:0 22px;border-right:1px solid var(--border)}
+.chapter-time{display:flex;flex-direction:column;align-items:center;gap:1px}
+.time-num{font-size:1.6rem;font-weight:900;color:var(--accent);line-height:1}
+.time-unit{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.5px}
+
+.chapter-toggle{display:flex;align-items:center;justify-content:center;padding:0 18px;
+  color:var(--muted);font-size:.9rem;transition:transform .3s}
+.chapter-wrap.open .chapter-toggle{transform:rotate(180deg)}
+
+.chapter-detail{background:var(--surface2);border:1px solid var(--border-light);border-top:none;
+  border-radius:0 0 var(--radius) var(--radius);max-height:0;overflow:hidden;
+  transition:max-height .38s cubic-bezier(.4,0,.2,1)}
+.chapter-wrap.open .chapter-detail{max-height:900px}
+.detail-inner{padding:24px 28px 28px}
+
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+
+.detail-block{border-radius:var(--radius-sm);padding:16px 18px}
+.detail-block.concepts{background:rgba(129,140,248,.07);border:1px solid rgba(129,140,248,.15)}
+.detail-block.analogy{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15)}
+.detail-block.commands{background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.15)}
+.detail-block.warn{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2)}
+.detail-block.strategy{background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.15)}
+.detail-block.steps{background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.15)}
+.detail-block.flow{background:rgba(244,114,182,.05);border:1px solid rgba(244,114,182,.15)}
+
+.detail-block-title{font-size:.73rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;opacity:.75}
+.detail-block.concepts .detail-block-title{color:#818cf8}
+.detail-block.analogy .detail-block-title{color:#34d399}
+.detail-block.commands .detail-block-title{color:#22d3ee}
+.detail-block.warn .detail-block-title{color:#f87171}
+.detail-block.strategy .detail-block-title{color:#a78bfa}
+.detail-block.steps .detail-block-title{color:#fbbf24}
+.detail-block.flow .detail-block-title{color:#f472b6}
+
+.tag-list{display:flex;flex-wrap:wrap;gap:7px}
+.tag{display:inline-block;padding:4px 11px;border-radius:6px;font-size:.78rem;font-weight:700}
+.tag-purple{background:rgba(129,140,248,.18);color:#a5b4fc;border:1px solid rgba(129,140,248,.25)}
+.tag-green{background:rgba(52,211,153,.15);color:#6ee7b7;border:1px solid rgba(52,211,153,.22)}
+.tag-cyan{background:rgba(34,211,238,.15);color:#67e8f9;border:1px solid rgba(34,211,238,.22)}
+.tag-orange{background:rgba(251,191,36,.15);color:#fcd34d;border:1px solid rgba(251,191,36,.22)}
+.tag-red{background:rgba(248,113,113,.15);color:#fca5a5;border:1px solid rgba(248,113,113,.22)}
+.tag-pink{background:rgba(244,114,182,.15);color:#f9a8d4;border:1px solid rgba(244,114,182,.22)}
+
+.analogy-text{font-size:.9rem;color:var(--text-secondary);line-height:1.7;font-style:italic}
+.analogy-text strong{color:var(--green);font-style:normal}
+
+.cmd-list{display:flex;flex-direction:column;gap:8px}
+.cmd-item{display:flex;align-items:center;gap:10px}
+.cmd-chip{font-family:monospace;background:rgba(0,0,0,.5);border:1px solid rgba(34,211,238,.25);
+  color:#67e8f9;padding:3px 10px;border-radius:6px;font-size:.82rem;font-weight:700;white-space:nowrap}
+.cmd-desc{font-size:.83rem;color:var(--text-secondary)}
+
+.warn-list{display:flex;flex-direction:column;gap:8px}
+.warn-item{display:flex;align-items:flex-start;gap:8px;font-size:.87rem;color:var(--text-secondary);line-height:1.5}
+.warn-icon{flex-shrink:0;margin-top:1px}
+
+.model-table{width:100%;border-collapse:collapse}
+.model-table th,.model-table td{padding:7px 12px;text-align:right;font-size:.83rem;border-bottom:1px solid var(--border)}
+.model-table th{color:var(--muted);font-weight:700;font-size:.73rem;text-transform:uppercase;letter-spacing:.4px}
+.model-table td:first-child{font-weight:800;color:var(--text);font-family:monospace}
+
+.step-list{display:flex;flex-direction:column;gap:8px}
+.step-item{display:flex;align-items:flex-start;gap:10px;font-size:.87rem;color:var(--text-secondary);line-height:1.5}
+.step-num{width:22px;height:22px;border-radius:50%;font-size:.72rem;font-weight:900;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+
+.detail-full{margin-top:14px}
+
+.agent-anatomy{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.anatomy-piece{background:rgba(255,255,255,.04);border-radius:var(--radius-sm);
+  padding:14px 12px;text-align:center;border:1px solid var(--border-light)}
+.ap-icon{font-size:1.4rem;margin-bottom:6px}
+.ap-title{font-size:.83rem;font-weight:800;color:var(--text);margin-bottom:3px}
+.ap-sub{font-size:.73rem;color:var(--muted);line-height:1.4}
+
+.mem-types{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.mem-type{border-radius:var(--radius-xs);padding:12px 10px;text-align:center}
+.mt-icon{font-size:1.2rem;margin-bottom:4px}
+.mt-name{font-size:.78rem;font-weight:800;color:var(--text);margin-bottom:3px}
+.mt-desc{font-size:.7rem;color:var(--muted);line-height:1.4}
+.mt-user{background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.18)}
+.mt-feedback{background:rgba(244,114,182,.08);border:1px solid rgba(244,114,182,.18)}
+.mt-project{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.18)}
+.mt-reference{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.18)}
+
+.flow-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.flow-step{padding:7px 14px;border-radius:8px;font-size:.82rem;font-weight:700}
+
+.summary-card{background:linear-gradient(135deg,#052e16 0%,#064e3b 100%);
+  border:1px solid rgba(52,211,153,.18);border-radius:var(--radius);padding:32px;margin-top:40px;box-shadow:var(--shadow-lg)}
+.summary-title{font-size:1.2rem;font-weight:900;color:#6ee7b7;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.summary-item{display:flex;align-items:center;gap:10px;padding:11px 16px;
+  background:rgba(255,255,255,.05);border-radius:10px;border:1px solid rgba(52,211,153,.1);
+  font-size:.9rem;color:#d1fae5;font-weight:600}
+.s-check{color:#34d399;font-weight:900;font-size:1rem;flex-shrink:0}
+
+.hw-card{background:linear-gradient(135deg,#1a0a2e 0%,#2d1052 100%);
+  border:1px solid rgba(167,139,250,.2);border-radius:var(--radius);padding:28px 32px;margin-top:16px}
+.hw-title{font-size:1.1rem;font-weight:900;color:#c4b5fd;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.hw-list{display:flex;flex-direction:column;gap:10px}
+.hw-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;
+  background:rgba(255,255,255,.04);border-radius:10px;border:1px solid rgba(167,139,250,.1)}
+.hw-num{width:26px;height:26px;border-radius:50%;background:rgba(167,139,250,.2);
+  color:#a78bfa;font-size:.75rem;font-weight:900;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;margin-top:1px}
+.hw-text{font-size:.88rem;color:#e9d5ff;line-height:1.6}
+
+footer{text-align:center;padding:30px 20px;color:var(--muted);font-size:.85rem}
+.footer-line{display:inline-block;padding:8px 22px;background:var(--surface);
+  border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--border)}
+
+@media(max-width:680px){
+  .hero h1{font-size:1.75rem}.hero{padding:44px 0 52px}
+  .detail-grid{grid-template-columns:1fr}
+  .mem-types{grid-template-columns:1fr 1fr}
+  .agent-anatomy{grid-template-columns:1fr 1fr}
+  .chapter-card{grid-template-columns:60px 1fr auto}
+  .chapter-time-col{display:none}
+  .summary-grid{grid-template-columns:1fr}
+  .hero-meta{gap:10px}
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="hero">
+<div class="hero-content">
+  <div class="hero-badge">&#x1F916; יום צילום &middot; Claude Code Desktop</div>
+  <h1>בניית סוכנים אוטונומיים</h1>
+  <p class="subtitle">מה זה סוכן, איך מגדירים אותו נכון, ואיך בונים ביחד — בזמן אמת — סוכן שמתאם פגישות ביומן.</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">&#x23F1;&#xFE0F; ~115 דקות</div>
+    <div class="hero-meta-item">&#x1F4DA; 6 פרקים</div>
+    <div class="hero-meta-item">&#x1F6E0;&#xFE0F; הדגמה חיה בסוף</div>
+    <div class="hero-meta-item">&#x1F3AF; סוכן עובד</div>
+  </div>
+</div>
+</div>
+
+<div class="page-wrapper">
+
+<div class="section-hdr"><h2>מפת הזמן</h2></div>
+<div class="timeline-wrap">
+  <div class="timeline-label">
+    <span>&#9654; התחלה</span>
+    <span>~115 דקות &#9632;</span>
+  </div>
+  <div class="timeline-bar">
+    <div class="timeline-bar-fill" id="timelineFill"></div>
+  </div>
+  <div class="timeline-segs" id="timelineSegs">
+    <div class="timeline-seg" style="flex:10;background:#818cf8"></div>
+    <div class="timeline-seg" style="flex:15;background:#34d399"></div>
+    <div class="timeline-seg" style="flex:15;background:#a78bfa"></div>
+    <div class="timeline-seg" style="flex:15;background:#22d3ee"></div>
+    <div class="timeline-seg" style="flex:20;background:#fbbf24"></div>
+    <div class="timeline-seg" style="flex:30;background:#f472b6"></div>
+    <div class="timeline-seg" style="flex:10;background:#6b7094"></div>
+  </div>
+  <div class="seg-tags">
+    <span class="seg-tag" style="background:rgba(129,140,248,.15);color:#a5b4fc;border:1px solid rgba(129,140,248,.25)">&#x1F916; מה זה סוכן &middot; 10 דק׳</span>
+    <span class="seg-tag" style="background:rgba(52,211,153,.12);color:#6ee7b7;border:1px solid rgba(52,211,153,.22)">&#x1F4C4; CLAUDE.md &middot; 15 דק׳</span>
+    <span class="seg-tag" style="background:rgba(167,139,250,.12);color:#c4b5fd;border:1px solid rgba(167,139,250,.22)">&#x1F9E0; מודלים &middot; 15 דק׳</span>
+    <span class="seg-tag" style="background:rgba(34,211,238,.12);color:#67e8f9;border:1px solid rgba(34,211,238,.22)">&#x1F4B0; טוקנים &middot; 15 דק׳</span>
+    <span class="seg-tag" style="background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.22)">&#x1F9E9; זיכרון + Skills &middot; 20 דק׳</span>
+    <span class="seg-tag" style="background:rgba(244,114,182,.12);color:#f9a8d4;border:1px solid rgba(244,114,182,.22)">&#x1F680; הדגמה חיה &middot; 30 דק׳</span>
+  </div>
+</div>
+
+<div class="section-hdr"><h2>הפרקים</h2></div>
+<p style="font-size:.83rem;color:var(--muted);margin-bottom:14px;font-weight:600">לחץ על פרק לפרטים מורחבים &#x2193;</p>
+<div class="chapters">
+
+<!-- CH 1 -->
+<div class="chapter-wrap" id="ch1">
+  <div class="chapter-card ch-1" onclick="toggleChapter('ch1')">
+    <div class="chapter-num-col">
+      <div class="chapter-icon">&#x1F916;</div>
+      <div class="chapter-number">01</div>
+    </div>
+    <div class="chapter-body">
+      <h3 class="chapter-title">מה זה סוכן אוטונומי?</h3>
+      <p class="chapter-desc">הפרדיגמה החדשה — ולמה זה שונה מ-ChatGPT רגיל</p>
+      <div class="chapter-outcome"><span class="dot" style="background:#818cf8"></span><span style="color:#a5b4fc">מבינים את המודל המנטלי לפני שנוגעים בקוד</span></div>
+    </div>
+    <div class="chapter-time-col">
+      <div class="chapter-time">
+        <span class="time-num">10</span>
+        <span class="time-unit">דקות</span>
+      </div>
+    </div>
+    <div class="chapter-toggle">&#x25BE;</div>
+  </div>
+  <div class="chapter-detail">
+    <div class="detail-inner">
+      <div class="detail-grid">
+        <div class="detail-block concepts">
+          <div class="detail-block-title">&#x1F511; מושגי מפתח</div>
+          <div class="tag-list">
+            <span class="tag tag-purple">Agentic Loop</span>
+            <span class="tag tag-purple">Tool Use</span>
+            <span class="tag tag-purple">LLM</span>
+            <span class="tag tag-purple">Memory</span>
+            <span class="tag tag-purple">Act &rarr; Observe</span>
+            <span class="tag tag-purple">Autonomy</span>
+          </div>
+        </div>
+        <div class="detail-block analogy">
+          <div class="detail-block-title">&#x1F4A1; אנלוגיה</div>
+          <p class="analogy-text">AI רגיל = עובד שעונה על שאלות.<br><strong>סוכן = עובד שמקבל משימה, בוחר כלים, מבצע, ומדווח — לבד.</strong><br><br>LLM הוא המוח. הכלים הם הידיים. הזיכרון הוא מחברת.</p>
+        </div>
+      </div>
+      <div class="detail-full">
+        <div class="detail-block" style="background:rgba(129,140,248,.05);border:1px solid rgba(129,140,248,.15)">
+          <div class="detail-block-title" style="color:#818cf8">&#x1F504; מבנה סוכן = 4 חלקים</div>
+          <div class="agent-anatomy">
+            <div class="anatomy-piece">
+              <div class="ap-icon">&#x1F9E0;</div>
+              <div class="ap-title">LLM</div>
+              <div class="ap-sub">המוח — מחליט מה לעשות</div>
+            </div>
+            <div class="anatomy-piece">
+              <div class="ap-icon">&#x1F527;</div>
+              <div class="ap-title">Tools</div>
+              <div class="ap-sub">הכלים — יומן, API, קבצים</div>
+            </div>
+            <div class="anatomy-piece">
+              <div class="ap-icon">&#x1F9E9;</div>
+              <div class="ap-title">Memory</div>
+              <div class="ap-sub">הזיכרון — מה ידוע על הפרויקט</div>
+            </div>
+            <div class="anatomy-piece">
+              <div class="ap-icon">&#x1F501;</div>
+              <div class="ap-title">Action Loop</div>
+              <div class="ap-sub">בצע &rarr; בדוק &rarr; שפר &rarr; חזור</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CH 2 -->
+<div class="chapter-wrap" id="ch2">
+  <div class="chapter-card ch-2" onclick="toggleChapter('ch2')">
+    <div class="chapter-num-col">
+      <div class="chapter-icon">&#x1F4C4;</div>
+      <div class="chapter-number">02</div>
+    </div>
+    <div class="chapter-body">
+      <h3 class="chapter-title">הבסיס: CLAUDE.md</h3>
+      <p class="chapter-desc">איך מגדירים את "אישיות" הפרויקט — הקובץ הכי חשוב בכל ריפו</p>
+      <div class="chapter-outcome"><span class="dot" style="background:#34d399"></span><span style="color:#6ee7b7">יוצרים CLAUDE.md לפרויקט הסוכן שלנו בזמן אמת</span></div>
+    </div>
+    <div class="chapter-time-col">
+      <div class="chapter-time">
+        <span class="time-num">15</span>
+        <span class="time-unit">דקות</span>
+      </div>
+    </div>
+    <div class="chapter-toggle">&#x25BE;</div>
+  </div>
+  <div class="chapter-detail">
+    <div class="detail-inner">
+      <div class="detail-grid">
+        <div class="detail-block analogy">
+          <div class="detail-block-title">&#x1F4A1; אנלוגיה</div>
+          <p class="analogy-text"><strong>CLAUDE.md = תדריך פתיחה למשמרת.</strong><br><br>לפני כל משמרת, המנהל נותן לעובד דף עם: מה לעשות, מה אסור, ואיך הפרויקט בנוי.<br>Claude מקבל אותו דף בכל סשן חדש.</p>
+        </div>
+        <div class="detail-block concepts">
+          <div class="detail-block-title">&#x1F4CB; מה כולל הקובץ?</div>
+          <div class="tag-list">
+            <span class="tag tag-green">Stack &amp; Tech</span>
+            <span class="tag tag-green">Naming Conventions</span>
+            <span class="tag tag-green">ארכיטקטורה</span>
+            <span class="tag tag-green">Best Practices</span>
+            <span class="tag tag-green">מה אסור לסוכן</span>
+            <span class="tag tag-green">מיקום ה-API Keys</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-full">
+        <div class="detail-block warn">
+          <div class="detail-block-title">&#x26A0;&#xFE0F; טיפ קריטי — פחות זה יותר</div>
+          <div class="warn-list">
+            <div class="warn-item"><span class="warn-icon">&#x26A0;&#xFE0F;</span><span>שמור <strong style="color:#f87171">מתחת ל-200 שורות</strong> — כל שורה = טוקנים = כסף</span></div>
+            <div class="warn-item"><span class="warn-icon">&#x26A0;&#xFE0F;</span><span>קובץ ארוך מדי = Claude מבזבז קונטקסט על הוראות במקום על המשימה</span></div>
+            <div class="warn-item"><span class="warn-icon">&#x2705;</span><span>עדיף: קצר, ברור, ממוקד. Claude חכם — לא צריך לפרט הכל</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CH 3 -->
+<div class="chapter-wrap" id="ch3">
+  <div class="chapter-card ch-3" onclick="toggleChapter('ch3')">
+    <div class="chapter-num-col">
+      <div class="chapter-icon">&#x1F9E0;</div>
+      <div class="chapter-number">03</div>
+    </div>
+    <div class="chapter-body">
+      <h3 class="chapter-title">מודלים ואסטרטגיית עלויות</h3>
+      <p class="chapter-desc">Haiku / Sonnet / Opus — מתי להשתמש בכל אחד ואיך לא לבזבז</p>
+      <div class="chapter-outcome"><span class="dot" style="background:#a78bfa"></span><span style="color:#c4b5fd">יודעים לבחור מודל נכון לכל סוג משימה</span></div>
+    </div>
+    <div class="chapter-time-col">
+      <div class="chapter-time">
+        <span class="time-num">15</span>
+        <span class="time-unit">דקות</span>
+      </div>
+    </div>
+    <div class="chapter-toggle">&#x25BE;</div>
+  </div>
+  <div class="chapter-detail">
+    <div class="detail-inner">
+      <div class="detail-grid">
+        <div class="detail-block analogy">
+          <div class="detail-block-title">&#x1F4A1; אנלוגיה</div>
+          <p class="analogy-text"><strong>Haiku = אופנוע</strong> — מהיר, זול, לא יושב בפקקים.<br><strong>Sonnet = מכונית</strong> — מאוזן, מתאים לרוב הצרכים.<br><strong>Opus = מטוס</strong> — הכי עוצמתי, הכי יקר. לא תמיד צריך.</p>
+        </div>
+        <div class="detail-block strategy">
+          <div class="detail-block-title">&#x1F3AF; טבלת בחירה</div>
+          <table class="model-table">
+            <tr><th>מודל</th><th>מתי?</th><th>עלות</th></tr>
+            <tr><td>Haiku</td><td>ניתוח, סיכום, פשוט</td><td style="color:#34d399">&#x1F49A; זול</td></tr>
+            <tr><td>Sonnet</td><td>ברירת מחדל, ביצוע</td><td style="color:#fbbf24">&#x1F49B; בינוני</td></tr>
+            <tr><td>Opus</td><td>תכנון, ארכיטקטורה</td><td style="color:#f87171">&#x1F534; יקר</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="detail-full">
+        <div class="detail-block" style="background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.18)">
+          <div class="detail-block-title" style="color:#a78bfa">&#x1F4A1; אסטרטגיה מתקדמת — תכנן בגדול, בצע בחסכנות</div>
+          <div class="step-list" style="margin-top:10px">
+            <div class="step-item">
+              <div class="step-num" style="background:rgba(248,113,113,.2);color:#f87171">1</div>
+              <span><strong style="color:#fcd34d">Opus לתכנון:</strong> "תבנה לי ארכיטקטורה לסוכן שמתאם פגישות" — חשיבה עמוקה</span>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:rgba(129,140,248,.2);color:#818cf8">2</div>
+              <span><strong style="color:#a5b4fc">Sonnet לביצוע:</strong> מריץ את הפלן, כותב קוד, פותח קבצים — רוב העבודה</span>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:rgba(52,211,153,.2);color:#34d399">3</div>
+              <span><strong style="color:#6ee7b7">Haiku לאוטומציה:</strong> בדיקות חוזרות, ולידציה, משימות שגרתיות</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CH 4 -->
+<div class="chapter-wrap" id="ch4">
+  <div class="chapter-card ch-4" onclick="toggleChapter('ch4')">
+    <div class="chapter-num-col">
+      <div class="chapter-icon">&#x1F4B0;</div>
+      <div class="chapter-number">04</div>
+    </div>
+    <div class="chapter-body">
+      <h3 class="chapter-title">ניהול טוקנים וקונטקסט</h3>
+      <p class="chapter-desc">לא לבזבז כסף ולא לאבד קונטקסט — פקודות שחוסכות אלפי טוקנים</p>
+      <div class="chapter-outcome"><span class="dot" style="background:#22d3ee"></span><span style="color:#67e8f9">שולטים בעלויות ויודעים מתי לעשות /compact</span></div>
+    </div>
+    <div class="chapter-time-col">
+      <div class="chapter-time">
+        <span class="time-num">15</span>
+        <span class="time-unit">דקות</span>
+      </div>
+    </div>
+    <div class="chapter-toggle">&#x25BE;</div>
+  </div>
+  <div class="chapter-detail">
+    <div class="detail-inner">
+      <div class="detail-grid">
+        <div class="detail-block analogy">
+          <div class="detail-block-title">&#x1F4A1; אנלוגיה</div>
+          <p class="analogy-text"><strong>טוקנים = דלק. קונטקסט = מיכל דלק.</strong><br><br>כל הודעה שאתה שולח — Claude טוען מחדש את כל השיחה. שיחה ארוכה = יותר דלק.<br><strong>/compact</strong> = לרוקן את מחצית הדלק הישן ולמלא מחדש בחכמה.</p>
+        </div>
+        <div class="detail-block commands">
+          <div class="detail-block-title">&#x2328;&#xFE0F; פקודות חיוניות</div>
+          <div class="cmd-list">
+            <div class="cmd-item">
+              <span class="cmd-chip">/cost</span>
+              <span class="cmd-desc">כמה עלה הסשן הנוכחי</span>
+            </div>
+            <div class="cmd-item">
+              <span class="cmd-chip">/context</span>
+              <span class="cmd-desc">כמה קונטקסט נשאר (%)</span>
+            </div>
+            <div class="cmd-item">
+              <span class="cmd-chip">/compact</span>
+              <span class="cmd-desc">מסכם שיחה ומתחיל חדש</span>
+            </div>
+            <div class="cmd-item">
+              <span class="cmd-chip">/clear</span>
+              <span class="cmd-desc">מאפס הכל ללא סיכום</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-full">
+        <div class="detail-block warn">
+          <div class="detail-block-title">&#x26A0;&#xFE0F; הבעיה הגדולה — Claude הוא Stateless</div>
+          <div class="warn-list">
+            <div class="warn-item"><span class="warn-icon">&#x26A0;&#xFE0F;</span><span>Claude <strong style="color:#f87171">לא זוכר</strong> שום דבר בין סשנים — רק בתוך שיחה אחת</span></div>
+            <div class="warn-item"><span class="warn-icon">&#x26A0;&#xFE0F;</span><span>כל הודעה חדשה = כל ההיסטוריה נטענת שוב = עלות קבועה ועולה</span></div>
+            <div class="warn-item"><span class="warn-icon">&#x2705;</span><span>פתרון: <strong style="color:#22d3ee">/compact</strong> כשקונטקסט מתמלא — מסכם את החשוב ומוסיף לסשן חדש</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CH 5 -->
+<div class="chapter-wrap" id="ch5">
+  <div class="chapter-card ch-5" onclick="toggleChapter('ch5')">
+    <div class="chapter-num-col">
+      <div class="chapter-icon">&#x1F9E9;</div>
+      <div class="chapter-number">05</div>
+    </div>
+    <div class="chapter-body">
+      <h3 class="chapter-title">זיכרון, Skills ו-Plugins</h3>
+      <p class="chapter-desc">איך Claude לומד מהפרויקט לבד, Skills שחוסכים טוקנים, ואזהרות אבטחה</p>
+      <div class="chapter-outcome"><span class="dot" style="background:#fbbf24"></span><span style="color:#fcd34d">מגדירים Auto Memory ומוסיפים Skill לפרויקט</span></div>
+    </div>
+    <div class="chapter-time-col">
+      <div class="chapter-time">
+        <span class="time-num">20</span>
+        <span class="time-unit">דקות</span>
+      </div>
+    </div>
+    <div class="chapter-toggle">&#x25BE;</div>
+  </div>
+  <div class="chapter-detail">
+    <div class="detail-inner">
+      <div class="detail-grid">
+        <div class="detail-block" style="background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.2);grid-column:1/-1">
+          <div class="detail-block-title" style="color:#fbbf24">&#x1F9E0; Auto Memory — 4 סוגי זיכרון</div>
+          <div class="mem-types">
+            <div class="mem-type mt-user">
+              <div class="mt-icon">&#x1F464;</div>
+              <div class="mt-name">user</div>
+              <div class="mt-desc">מי המשתמש, העדפות, רמת מומחיות</div>
+            </div>
+            <div class="mem-type mt-feedback">
+              <div class="mt-icon">&#x1F4AC;</div>
+              <div class="mt-name">feedback</div>
+              <div class="mt-desc">תיקונים שנתת, "אל תעשה X"</div>
+            </div>
+            <div class="mem-type mt-project">
+              <div class="mt-icon">&#x1F4C1;</div>
+              <div class="mt-name">project</div>
+              <div class="mt-desc">מצב הפרויקט, יעדים, החלטות</div>
+            </div>
+            <div class="mem-type mt-reference">
+              <div class="mt-icon">&#x1F517;</div>
+              <div class="mt-name">reference</div>
+              <div class="mt-desc">מאיפה למצוא מידע חיצוני</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-block analogy">
+          <div class="detail-block-title">&#x1F4A1; אנלוגיה — Skills</div>
+          <p class="analogy-text"><strong>Skill = מומחה שמגיע רק כשקוראים לו.</strong><br><br>לא משלמים לייעוץ משפטי כל יום — הוא מגיע רק כשצריך. Skill לא נטען = לא מבזבז טוקנים.</p>
+        </div>
+        <div class="detail-block warn">
+          <div class="detail-block-title">&#x26A0;&#xFE0F; Plugins — זהירות אבטחה</div>
+          <div class="warn-list">
+            <div class="warn-item"><span class="warn-icon">&#x1F534;</span><span>Plugin = קוד חיצוני שרץ על המחשב שלך</span></div>
+            <div class="warn-item"><span class="warn-icon">&#x26A0;&#xFE0F;</span><span>עלול לגנוב API keys, לקרוא קבצים, לשלוח מידע החוצה</span></div>
+            <div class="warn-item"><span class="warn-icon">&#x2705;</span><span>חוק: <strong>רק ממקורות מוכרים</strong> — תמיד לקרוא את הקוד לפני</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CH 6 -->
+<div class="chapter-wrap" id="ch6">
+  <div class="chapter-card ch-6" onclick="toggleChapter('ch6')">
+    <div class="chapter-num-col">
+      <div class="chapter-icon">&#x1F680;</div>
+      <div class="chapter-number">06</div>
+    </div>
+    <div class="chapter-body">
+      <h3 class="chapter-title">הדגמה חיה: סוכן תיאום פגישות</h3>
+      <p class="chapter-desc">מאפס לסוכן עובד — בקשה בעברית &rarr; Google Calendar &rarr; פגישה קבועה</p>
+      <div class="chapter-outcome"><span class="dot" style="background:#f472b6"></span><span style="color:#f9a8d4">סוכן עובד בסוף הפרק — הכל מחובר ביחד</span></div>
+    </div>
+    <div class="chapter-time-col">
+      <div class="chapter-time">
+        <span class="time-num">30</span>
+        <span class="time-unit">דקות</span>
+      </div>
+    </div>
+    <div class="chapter-toggle">&#x25BE;</div>
+  </div>
+  <div class="chapter-detail">
+    <div class="detail-inner">
+      <div class="detail-grid">
+        <div class="detail-block steps">
+          <div class="detail-block-title">&#x1F3D7;&#xFE0F; מה בונים</div>
+          <div class="step-list">
+            <div class="step-item">
+              <div class="step-num" style="background:rgba(251,191,36,.2);color:#fbbf24">1</div>
+              <span>CLAUDE.md עם חוקי הסוכן</span>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:rgba(251,191,36,.2);color:#fbbf24">2</div>
+              <span>חיבור Google Calendar API + OAuth</span>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:rgba(251,191,36,.2);color:#fbbf24">3</div>
+              <span><code style="color:#fbbf24;font-size:.8rem">check_availability(date, duration)</code></span>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:rgba(251,191,36,.2);color:#fbbf24">4</div>
+              <span><code style="color:#fbbf24;font-size:.8rem">create_event(title, time, attendees)</code></span>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:rgba(251,191,36,.2);color:#fbbf24">5</div>
+              <span><code style="color:#fbbf24;font-size:.8rem">list_upcoming(days)</code></span>
+            </div>
+          </div>
+        </div>
+        <div class="detail-block" style="background:rgba(244,114,182,.06);border:1px solid rgba(244,114,182,.18)">
+          <div class="detail-block-title" style="color:#f472b6">&#x1F3AC; מה מדגים בהדגמה</div>
+          <div class="tag-list">
+            <span class="tag tag-pink">CLAUDE.md בפעולה</span>
+            <span class="tag tag-pink">Sonnet לביצוע</span>
+            <span class="tag tag-pink">OAuth + Google API</span>
+            <span class="tag tag-pink">/cost בסוף</span>
+            <span class="tag tag-pink">Auto Memory</span>
+            <span class="tag tag-pink">/compact</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-full">
+        <div class="detail-block flow">
+          <div class="detail-block-title">&#x1F504; זרימת העבודה</div>
+          <div class="flow-row">
+            <span class="flow-step" style="background:rgba(244,114,182,.15);color:#f9a8d4">&#x1F5E3;&#xFE0F; בקשה בעברית</span>
+            <span style="color:var(--muted)">&rarr;</span>
+            <span class="flow-step" style="background:rgba(129,140,248,.15);color:#a5b4fc">&#x1F9E0; Claude מחשב</span>
+            <span style="color:var(--muted)">&rarr;</span>
+            <span class="flow-step" style="background:rgba(52,211,153,.15);color:#6ee7b7">&#x1F4C5; בדיקת יומן</span>
+            <span style="color:var(--muted)">&rarr;</span>
+            <span class="flow-step" style="background:rgba(251,191,36,.15);color:#fcd34d">&#x2705; פגישה נקבעה</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /chapters -->
+
+<div class="section-hdr"><h2>בסיום הקורס</h2></div>
+<div class="summary-card">
+  <div class="summary-title">&#x1F3C6; מה יודעים אחרי הקורס</div>
+  <div class="summary-grid">
+    <div class="summary-item"><span class="s-check">&#x2713;</span>מבינים מה זה סוכן אוטונומי</div>
+    <div class="summary-item"><span class="s-check">&#x2713;</span>יודעים לכתוב CLAUDE.md נכון</div>
+    <div class="summary-item"><span class="s-check">&#x2713;</span>בוחרים מודל לפי סוג המשימה</div>
+    <div class="summary-item"><span class="s-check">&#x2713;</span>שולטים בטוקנים ועלויות</div>
+    <div class="summary-item"><span class="s-check">&#x2713;</span>מגדירים Auto Memory ו-Skills</div>
+    <div class="summary-item"><span class="s-check">&#x2713;</span>בנו סוכן עובד מאפס</div>
+  </div>
+</div>
+
+<div class="hw-card">
+  <div class="hw-title">&#x1F3AF; אתגרים לתרגול</div>
+  <div class="hw-list">
+    <div class="hw-item">
+      <div class="hw-num">1</div>
+      <div class="hw-text">החלף את Google Calendar ב-<strong>Calendly API</strong> — אותו סוכן, ממשק אחר</div>
+    </div>
+    <div class="hw-item">
+      <div class="hw-num">2</div>
+      <div class="hw-text">הוסף ל-CLAUDE.md חוק: <strong>"אסור לקבוע פגישות בסופ&quot;ש"</strong> — ובדוק שהסוכן מכבד אותו</div>
+    </div>
+    <div class="hw-item">
+      <div class="hw-num">3</div>
+      <div class="hw-text">בנה כלי שלישי: <strong>סיכום שבועי</strong> — שולח למייל תזכורת על כל הפגישות הקרובות</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /page-wrapper -->
+
+<footer>
+  <div class="footer-line">&#x1F916; בניית סוכנים אוטונומיים עם Claude Code Desktop</div>
+</footer>
+
+<script>
+window.addEventListener('scroll',function(){
+  var h=document.documentElement;
+  var pct=(h.scrollTop||document.body.scrollTop)/((h.scrollHeight||document.body.scrollHeight)-h.clientHeight)*100;
+  document.getElementById('progressFill').style.width=Math.min(pct,100)+'%';
+});
+
+setTimeout(function(){
+  document.getElementById('timelineFill').style.width='100%';
+  document.querySelectorAll('.timeline-seg').forEach(function(s,i){
+    setTimeout(function(){s.style.opacity='1'},i*150);
+  });
+},500);
+
+function toggleChapter(id){
+  var wrap=document.getElementById(id);
+  var isOpen=wrap.classList.contains('open');
+  document.querySelectorAll('.chapter-wrap').forEach(function(w){w.classList.remove('open')});
+  if(!isOpen)wrap.classList.add('open');
+}
+
+var obs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)'}
+  });
+},{threshold:0.1});
+document.querySelectorAll('.chapter-wrap').forEach(function(c,i){
+  c.style.opacity='0';c.style.transform='translateY(20px)';
+  c.style.transition='opacity .5s ease '+(i*.07)+'s,transform .5s ease '+(i*.07)+'s';
+  obs.observe(c);
+});
+</script>
+</body>
+</html>
