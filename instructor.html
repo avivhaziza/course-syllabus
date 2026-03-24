@@ -3,652 +3,890 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>סילבוס מרצה – בוט טלגרם AI עם Claude Code</title>
+<title>סילבוס מרצה — בוט טלגרם עם Claude Code</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0a0d14;--bg2:#0f1117;--surface:#141720;--surface2:#1a1e2e;
-  --border:#1e2235;--border-light:#2a2f48;
-  --text:#e2e4ed;--text-secondary:#9da2b9;--muted:#5c6185;
-  --accent:#818cf8;--green:#34d399;--blue:#60a5fa;--orange:#fbbf24;
-  --pink:#f472b6;--cyan:#22d3ee;--red:#f87171;--purple:#a78bfa;
-  --radius:16px;--radius-sm:10px;
-  --shadow:0 2px 16px rgba(0,0,0,.4);--shadow-lg:0 8px 36px rgba(0,0,0,.5);
+  --bg:#0c0e17;
+  --surface:#13161f;
+  --surface2:#191d2b;
+  --border:#232740;
+  --text:#e4e6f0;
+  --muted:#555e80;
+  --accent:#7c6ff7;
+  --accent-glow:rgba(124,111,247,.18);
+  --green:#3dd68c;
+  --radius:14px;
 }
-body{font-family:"Segoe UI","SF Pro Display",-apple-system,BlinkMacSystemFont,sans-serif;
-  background:var(--bg);color:var(--text);line-height:1.75;font-size:16px;min-height:100vh}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  min-height:100vh;
+}
 
-.progress-bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:999;background:rgba(255,255,255,.05)}
-.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#f87171,#fb923c,#fbbf24);transition:width .1s linear}
+/* Progress */
+.prog{position:fixed;top:0;left:0;right:0;height:2px;z-index:99;background:rgba(255,255,255,.04)}
+.prog-fill{height:100%;width:0%;background:linear-gradient(90deg,#f97316,#ef4444);transition:width .1s}
 
 /* Hero */
-.hero{background:linear-gradient(135deg,#1a0505 0%,#2d0a0a 40%,#3b1111 70%,#1f0808 100%);
-  padding:52px 0 62px;position:relative;overflow:hidden;border-bottom:1px solid rgba(248,113,113,.15)}
-.hero::before{content:"";position:absolute;top:-30%;right:-10%;width:500px;height:500px;
-  background:radial-gradient(circle,rgba(248,113,113,.1) 0%,transparent 65%);border-radius:50%}
-.hero-content{max-width:900px;margin:0 auto;padding:0 24px;position:relative;z-index:1;text-align:center}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(248,113,113,.15);
-  border:1px solid rgba(248,113,113,.25);border-radius:20px;padding:6px 18px;
-  font-size:.82rem;color:#fca5a5;font-weight:700;margin-bottom:18px}
-.hero h1{font-size:2.3rem;color:#fff;margin-bottom:8px;font-weight:900;line-height:1.25}
-.hero .subtitle{color:rgba(255,255,255,.5);font-size:.95rem;max-width:600px;margin:0 auto 24px;line-height:1.7}
-.hero-meta{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
-.hero-meta-item{display:flex;align-items:center;gap:7px;padding:7px 16px;
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;
-  color:rgba(255,255,255,.75);font-size:.85rem;font-weight:600}
+.hero{
+  padding:52px 20px 56px;
+  text-align:center;
+  background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(239,68,68,.12) 0%,transparent 70%);
+  border-bottom:1px solid var(--border);
+}
+.badge{
+  display:inline-block;
+  background:rgba(239,68,68,.12);
+  border:1px solid rgba(239,68,68,.35);
+  color:#fca5a5;
+  font-size:.78rem;
+  font-weight:700;
+  letter-spacing:.6px;
+  padding:5px 14px;
+  border-radius:20px;
+  margin-bottom:18px;
+}
+.hero h1{
+  font-size:clamp(1.6rem,4.5vw,2.5rem);
+  font-weight:900;
+  color:#fff;
+  margin-bottom:10px;
+  letter-spacing:-.5px;
+}
+.hero p{
+  color:#6b7494;
+  font-size:.97rem;
+  max-width:500px;
+  margin:0 auto 28px;
+}
+.meta-row{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.meta-chip{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:6px 14px;
+  font-size:.84rem;
+  font-weight:600;
+  color:#8b93b5;
+}
 
-.page-wrapper{max-width:900px;margin:0 auto;padding:0 20px 80px}
+/* Layout */
+.wrap{
+  max-width:740px;
+  margin:0 auto;
+  padding:44px 20px 80px;
+}
 
-/* Section headers */
-.section-hdr{margin:40px 0 14px;display:flex;align-items:center;gap:12px}
-.section-hdr h2{font-size:.83rem;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
-.section-hdr::before{content:"";display:block;height:1px;flex:1;background:var(--border)}
+/* Stats */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:32px;
+}
+.stat{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px 12px;
+  text-align:center;
+}
+.stat-num{
+  font-size:1.7rem;
+  font-weight:900;
+  color:var(--accent);
+  line-height:1;
+  margin-bottom:5px;
+}
+.stat-label{font-size:.75rem;color:var(--muted);font-weight:600}
 
-/* Legend */
-.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
-.legend-item{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:.8rem;font-weight:700}
-.leg-say{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);color:#fcd34d}
-.leg-prompt{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);color:#c4b5fd}
-.leg-camera{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);color:#93c5fd}
-.leg-tip{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);color:#6ee7b7}
+/* Section divider */
+.divider{
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:1px;
+  color:var(--muted);
+  text-transform:uppercase;
+  margin:0 0 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.divider::after{content:"";flex:1;height:1px;background:var(--border)}
 
-/* Checklist */
-.checklist-card{background:var(--surface);border:1px solid rgba(248,113,113,.15);border-radius:var(--radius);padding:26px 30px;box-shadow:var(--shadow)}
-.checklist-title{font-size:1rem;font-weight:900;color:#fca5a5;margin-bottom:14px;display:flex;align-items:center;gap:10px}
-.check-list{display:flex;flex-direction:column;gap:8px}
-.check-item{display:flex;align-items:flex-start;gap:10px;font-size:.88rem;color:var(--text-secondary);line-height:1.55;
-  padding:8px 14px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--border)}
-.check-box{width:18px;height:18px;border-radius:4px;border:2px solid var(--muted);flex-shrink:0;margin-top:2px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all .2s}
-.check-box.checked{background:var(--green);border-color:var(--green)}
-.check-box.checked::after{content:"\2713";color:#fff;font-size:.7rem;font-weight:900}
+/* Pre-checklist card */
+.checklist-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-right:3px solid var(--green);
+  border-radius:var(--radius);
+  padding:22px 20px;
+  margin-bottom:32px;
+}
+.checklist-card h2{
+  font-size:1rem;
+  font-weight:800;
+  color:#fff;
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.checklist-items{
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.checklist-items li{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  font-size:.88rem;
+  color:#bcc2db;
+  line-height:1.5;
+}
+.checklist-items li::before{
+  content:"&#9744;";
+  color:var(--green);
+  font-size:1rem;
+  flex-shrink:0;
+  margin-top:1px;
+}
 
-/* Script sections */
-.script-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow)}
-.script-header{display:flex;align-items:center;gap:14px;padding:18px 24px;cursor:pointer;
-  transition:background .2s;user-select:none}
-.script-header:hover{background:var(--surface2)}
-.script-section.open .script-header{background:var(--surface2);border-bottom:1px solid var(--border-light)}
-.sh-icon{font-size:1.3rem}
-.sh-info{flex:1}
-.sh-title{font-size:1.02rem;font-weight:800;color:var(--text)}
-.sh-subtitle{font-size:.8rem;color:var(--muted);font-weight:600}
-.sh-time{background:rgba(129,140,248,.12);color:#a5b4fc;padding:4px 12px;border-radius:6px;
-  font-size:.78rem;font-weight:800;white-space:nowrap}
-.sh-toggle{color:var(--muted);font-size:.85rem;transition:transform .3s;margin-right:4px}
-.script-section.open .sh-toggle{transform:rotate(180deg)}
+/* Chapter */
+.chapter{
+  margin-bottom:8px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  background:var(--surface);
+}
+.chapter-head{
+  display:flex;
+  align-items:center;
+  gap:0;
+  cursor:pointer;
+  user-select:none;
+  transition:background .15s;
+}
+.chapter-head:hover{background:var(--surface2)}
 
-.script-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
-.script-section.open .script-body{max-height:5000px}
-.script-inner{padding:22px 26px 26px}
+.ch-num{
+  width:52px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  align-self:stretch;
+  font-size:.7rem;
+  font-weight:900;
+  color:var(--muted);
+  letter-spacing:1px;
+  border-left:1px solid var(--border);
+  position:relative;
+}
+.ch-num::after{
+  content:"";
+  position:absolute;
+  top:0;right:0;bottom:0;
+  width:3px;
+}
+.ch-1 .ch-num::after{background:linear-gradient(180deg,#7c6ff7,#6366f1)}
+.ch-2 .ch-num::after{background:linear-gradient(180deg,#3dd68c,#10b981)}
+.ch-3 .ch-num::after{background:linear-gradient(180deg,#38bdf8,#0ea5e9)}
+.ch-4 .ch-num::after{background:linear-gradient(180deg,#f472b6,#ec4899)}
+.ch-5 .ch-num::after{background:linear-gradient(180deg,#fb923c,#f97316)}
+.ch-6 .ch-num::after{background:linear-gradient(180deg,#a78bfa,#8b5cf6)}
+.ch-7 .ch-num::after{background:linear-gradient(180deg,#fbbf24,#f59e0b)}
+.ch-8 .ch-num::after{background:linear-gradient(180deg,#34d399,#059669)}
+.ch-9 .ch-num::after{background:linear-gradient(180deg,#f87171,#dc2626)}
 
-/* Script blocks */
-.sb{border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:10px;font-size:.88rem;line-height:1.7}
-.sb:last-child{margin-bottom:0}
+.ch-info{
+  flex:1;
+  padding:16px 16px 16px 12px;
+  min-width:0;
+}
+.ch-label{
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.5px;
+  color:var(--muted);
+  text-transform:uppercase;
+  margin-bottom:2px;
+}
+.ch-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.ch-title{
+  font-size:.97rem;
+  font-weight:800;
+  color:var(--text);
+}
+.ch-meta{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-shrink:0;
+}
+.ch-count{
+  font-size:.75rem;
+  color:var(--muted);
+  font-weight:600;
+  white-space:nowrap;
+}
+.arrow{
+  font-size:.7rem;
+  color:var(--muted);
+  transition:transform .25s;
+}
+.chapter.open .arrow{transform:rotate(180deg)}
 
-.sb-say{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.18);border-right:4px solid #fbbf24}
-.sb-say .sb-label{color:#fbbf24;font-size:.7rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
-.sb-say .sb-text{color:#fef3c7}
+/* Chapter content */
+.ch-content{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .38s cubic-bezier(.4,0,.2,1);
+}
+.chapter.open .ch-content{
+  max-height:9999px;
+  border-top:1px solid var(--border);
+}
+.ch-inner{
+  padding:18px 18px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
 
-.sb-prompt{background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.18);border-right:4px solid #a78bfa;position:relative}
-.sb-prompt .sb-label{color:#a78bfa;font-size:.7rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
-.sb-prompt .sb-text{color:#e9d5ff;font-family:"Segoe UI",sans-serif;direction:rtl;white-space:pre-wrap}
-.sb-prompt .copy-btn{position:absolute;top:10px;left:10px;background:rgba(167,139,250,.2);border:1px solid rgba(167,139,250,.3);
-  color:#c4b5fd;border-radius:7px;padding:4px 10px;font-size:.7rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit}
-.sb-prompt .copy-btn:hover{background:rgba(167,139,250,.35)}
-.sb-prompt .copy-btn.copied{background:rgba(52,211,153,.2);border-color:rgba(52,211,153,.3);color:#6ee7b7}
+/* Instructor blocks */
+.block{
+  border-radius:10px;
+  padding:14px 16px;
+}
+.block-label{
+  font-size:.68rem;
+  font-weight:800;
+  letter-spacing:.7px;
+  text-transform:uppercase;
+  margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  opacity:.85;
+}
+.block-text{
+  font-size:.88rem;
+  line-height:1.65;
+  color:#ccd0e4;
+}
 
-.sb-camera{background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.18);border-right:4px solid #60a5fa}
-.sb-camera .sb-label{color:#60a5fa;font-size:.7rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
-.sb-camera .sb-text{color:#bfdbfe}
+/* SAY block */
+.block-say{
+  background:rgba(124,111,247,.08);
+  border-right:3px solid #7c6ff7;
+}
+.block-say .block-label{color:#a89ff9}
 
-.sb-tip{background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.18);border-right:4px solid #34d399}
-.sb-tip .sb-label{color:#34d399;font-size:.7rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
-.sb-tip .sb-text{color:#d1fae5}
+/* SHOW block */
+.block-show{
+  background:rgba(61,214,140,.06);
+  border-right:3px solid #3dd68c;
+}
+.block-show .block-label{color:#6ee7b7}
 
-.sb-note{background:rgba(255,255,255,.03);border:1px solid var(--border-light)}
-.sb-note .sb-text{color:var(--text-secondary)}
+/* TIP block */
+.block-tip{
+  background:rgba(251,191,36,.06);
+  border-right:3px solid #fbbf24;
+}
+.block-tip .block-label{color:#fde68a}
+
+/* PROMPT block */
+.block-prompt{
+  background:#0a0c14;
+  border:1px solid rgba(34,211,238,.2);
+  border-radius:10px;
+  padding:0;
+  overflow:hidden;
+}
+.prompt-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 14px;
+  border-bottom:1px solid rgba(34,211,238,.12);
+  background:rgba(34,211,238,.04);
+}
+.prompt-label{
+  font-size:.68rem;
+  font-weight:800;
+  letter-spacing:.7px;
+  text-transform:uppercase;
+  color:#67e8f9;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.copy-btn{
+  font-size:.72rem;
+  font-weight:700;
+  color:#67e8f9;
+  background:rgba(34,211,238,.1);
+  border:1px solid rgba(34,211,238,.25);
+  border-radius:6px;
+  padding:4px 10px;
+  cursor:pointer;
+  transition:background .15s,color .15s;
+  white-space:nowrap;
+  font-family:inherit;
+}
+.copy-btn:hover{background:rgba(34,211,238,.2)}
+.copy-btn.copied{color:#4ade80;border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.08)}
+.prompt-text{
+  padding:14px 16px;
+  font-family:"Courier New",Courier,monospace;
+  font-size:.82rem;
+  line-height:1.7;
+  color:#a5f3fc;
+  white-space:pre-wrap;
+  word-break:break-word;
+  direction:rtl;
+}
 
 /* Footer */
-footer{text-align:center;padding:30px 20px;color:var(--muted);font-size:.85rem}
-.footer-line{display:inline-block;padding:8px 22px;background:var(--surface);
-  border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--border)}
+footer{
+  text-align:center;
+  padding:24px 20px;
+  color:var(--muted);
+  font-size:.8rem;
+  border-top:1px solid var(--border);
+}
 
-@media(max-width:680px){
-  .hero h1{font-size:1.6rem}.hero{padding:40px 0 48px}
-  .hero-meta{gap:8px}.hero-meta-item{font-size:.78rem;padding:5px 12px}
-  .legend{gap:6px}.legend-item{font-size:.72rem;padding:5px 10px}
-  .script-header{padding:14px 18px}
+@media(max-width:480px){
+  .hero{padding:36px 16px 40px}
+  .hero h1{font-size:1.4rem}
+  .hero p{font-size:.88rem}
+  .wrap{padding:28px 12px 60px}
+  .meta-chip{font-size:.76rem;padding:5px 10px}
+  .stats{gap:8px}
+  .stat-num{font-size:1.4rem}
+  .stat{padding:14px 8px}
+  .ch-num{width:42px;font-size:.65rem}
+  .ch-title{font-size:.9rem}
+  .ch-count{display:none}
+  .ch-inner{padding:14px 12px 16px}
+  .block-text{font-size:.84rem}
+  .prompt-text{font-size:.76rem}
 }
 </style>
 </head>
 <body>
 
-<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="prog"><div class="prog-fill" id="pf"></div></div>
 
 <div class="hero">
-<div class="hero-content">
-  <div class="hero-badge">&#x1F534; גרסת מרצה — לא לתלמידים</div>
-  <h1>סילבוס מרצה<br>בוט טלגרם AI &middot; Claude Code</h1>
-  <p class="subtitle">כולל סקריפט מילה-במילה, הנחיות מצלמה, פרומפטים מדויקים, וצ'קליסט טרום-צילום.</p>
-  <div class="hero-meta">
-    <div class="hero-meta-item">&#x23F1;&#xFE0F; ~80 דקות</div>
-    <div class="hero-meta-item">&#x1F3AC; יום צילום</div>
-    <div class="hero-meta-item">&#x1F4DD; סקריפט מלא</div>
-    <div class="hero-meta-item">&#x1F4CB; 5 פרומפטים</div>
-  </div>
-</div>
-</div>
-
-<div class="page-wrapper">
-
-<!-- LEGEND -->
-<div class="section-hdr"><h2>מקרא סימנים</h2></div>
-<div class="legend">
-  <div class="legend-item leg-say">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-  <div class="legend-item leg-prompt">&#x2328;&#xFE0F; הנחיה ל-Claude Code</div>
-  <div class="legend-item leg-camera">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-  <div class="legend-item leg-tip">&#x1F4A1; טיפ למצלמה</div>
-</div>
-
-<!-- CHECKLIST -->
-<div class="section-hdr"><h2>&#x2705; צ'קליסט לפני צילום</h2></div>
-<div class="checklist-card">
-  <div class="checklist-title">&#x23F1;&#xFE0F; 5 דקות לפני שמדליקים מצלמה</div>
-  <div class="check-list">
-    <div class="check-item"><div class="check-box" onclick="this.classList.toggle('checked')"></div><span>אפליקציית Claude Desktop פתוחה — הטאב <strong>Code</strong> נבחר</span></div>
-    <div class="check-item"><div class="check-box" onclick="this.classList.toggle('checked')"></div><span>תיקייה חדשה ריקה נוצרה על שולחן העבודה — <strong>telegram-calendar-bot</strong></span></div>
-    <div class="check-item"><div class="check-box" onclick="this.classList.toggle('checked')"></div><span>חשבון Anthropic קיים + <strong>API Key</strong> מוכן בצד (פתוח בדפדפן)</span></div>
-    <div class="check-item"><div class="check-box" onclick="this.classList.toggle('checked')"></div><span>אפליקציית טלגרם פתוחה — <strong>@BotFather</strong> נגיש</span></div>
-    <div class="check-item"><div class="check-box" onclick="this.classList.toggle('checked')"></div><span>Gmail ייעודי לסוכן פתוח ומחובר (לדוגמה: <strong>mybot.calendar@gmail.com</strong>)</span></div>
-    <div class="check-item"><div class="check-box" onclick="this.classList.toggle('checked')"></div><span>המסך מסודר: Claude Desktop משמאל, טלגרם מימין</span></div>
-    <div class="check-item"><div class="check-box" onclick="this.classList.toggle('checked')"></div><span>הדגמה קצרה של סוכן מוכן שכבר בנית — לפתיחה מרשימה</span></div>
+  <div class="badge">&#x1F512; למרצה בלבד</div>
+  <h1>סילבוס מרצה — בוט טלגרם עם Claude Code</h1>
+  <p>מדריך הוראה מפורט עם סקריפט, הדגמות ופרומפטים מוכנים — לצילום ולהעברה חיה</p>
+  <div class="meta-row">
+    <div class="meta-chip">&#x1F3AC; 9 פרקים</div>
+    <div class="meta-chip">&#x23F1;&#xFE0F; ~55 דקות</div>
+    <div class="meta-chip">&#x2328;&#xFE0F; 5 פרומפטים</div>
+    <div class="meta-chip">&#x1F4F2; Node.js + Telegraf</div>
   </div>
 </div>
 
-<!-- ========================================== -->
-<!-- PART 1: THEORY -->
-<!-- ========================================== -->
-<div class="section-hdr"><h2>&#x1F3EB; חלק 1 — תיאוריה (20–25 דק')</h2></div>
+<div class="wrap">
 
-<!-- 1.1 -->
-<div class="script-section" id="s11">
-  <div class="script-header" onclick="toggleSection('s11')">
-    <div class="sh-icon">&#x1F3AC;</div>
-    <div class="sh-info">
-      <div class="sh-title">1.1 — פתיחה: מה בונים היום</div>
-      <div class="sh-subtitle">הדגמת הסוכן המוכן + יצירת ציפייה</div>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">9</div>
+      <div class="stat-label">פרקים</div>
     </div>
-    <div class="sh-time">~3 דק'</div>
-    <div class="sh-toggle">&#x25BE;</div>
-  </div>
-  <div class="script-body">
-    <div class="script-inner">
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">לפני שנתחיל — אני רוצה להראות לכם לאן אנחנו הולכים.</div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-        <div class="sb-text">הדגם את הסוכן שכבר בנית — שלח הודעה בטלגרם, תן להם לראות תגובה חיה.</div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">מה שרואים פה — בוט טלגרם שאפשר לשלוח לו בעברית: "תקבע לי פגישה מחר בעשר", והוא מסדר את זה ביומן. אפשר לשאול אותו מה יש לי השבוע, לבקש לבטל פגישה — הכל בשפה טבעית, הכל דרך טלגרם. ואנחנו הולכים לבנות את זה היום, מאפס, ביחד.</div>
-      </div>
+    <div class="stat">
+      <div class="stat-num">5</div>
+      <div class="stat-label">פרומפטים</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">~55</div>
+      <div class="stat-label">דקות</div>
     </div>
   </div>
-</div>
 
-<!-- 1.2 -->
-<div class="script-section" id="s12">
-  <div class="script-header" onclick="toggleSection('s12')">
-    <div class="sh-icon">&#x1F4BB;</div>
-    <div class="sh-info">
-      <div class="sh-title">1.2 — מה זה Claude Code ולמה זה שונה מ-Claude רגיל</div>
-      <div class="sh-subtitle">Chat / Cowork / Code + הגישה של "אתם האדריכל"</div>
-    </div>
-    <div class="sh-time">~5 דק'</div>
-    <div class="sh-toggle">&#x25BE;</div>
-  </div>
-  <div class="script-body">
-    <div class="script-inner">
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">כולנו מכירים Claude.ai — נכנסים לאתר, כותבים שאלה, מקבלים תשובה. זה נהדר, אבל זה רק צ'אט. Claude Code זה משהו אחר לגמרי.</div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-        <div class="sb-text">הצבע על שלושת הטאבים באפליקציה: <strong>Chat</strong>, <strong>Cowork</strong>, <strong>Code</strong>.</div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">שלושה מצבים שונים באפליקציה אחת. Chat — זה Claude הרגיל שכולם מכירים. Cowork — עוזר עם קבצים ומסמכים. Code — זה מה שאנחנו עובדים איתו היום. ב-Code, Claude לא רק עונה — הוא פועל. הוא יוצר קבצים על המחשב שלכם, הוא כותב קוד, הוא מריץ אותו, הוא מתקן שגיאות — הכל בתוך האפליקציה הזו, ללא Terminal, ללא התקנות מסובכות.</div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">אני עובד לפי גישה שאני קורא לה: אתם האדריכל, Claude Code הוא הקבלן. אתם מחליטים מה לבנות ואיך זה אמור לעבוד — הוא בונה. לא צריך לדעת לקרוא קוד. צריך לדעת לתקשר בצורה ברורה.</div>
-      </div>
-    </div>
-  </div>
-</div>
+  <div class="divider">צ'קליסט לפני הצילום</div>
 
-<!-- 1.3 -->
-<div class="script-section" id="s13">
-  <div class="script-header" onclick="toggleSection('s13')">
-    <div class="sh-icon">&#x1F4C4;</div>
-    <div class="sh-info">
-      <div class="sh-title">1.3 — CLAUDE.md — הדבר הכי חשוב שתלמדו היום</div>
-      <div class="sh-subtitle">הסבר + אנלוגיית הקבלן + מה כותבים בו</div>
-    </div>
-    <div class="sh-time">~7 דק'</div>
-    <div class="sh-toggle">&#x25BE;</div>
+  <div class="checklist-card">
+    <h2>&#x2705; צ'קליסט לפני הצילום</h2>
+    <ul class="checklist-items">
+      <li>אפליקציית Claude Desktop פתוחה — טאב Code נבחר</li>
+      <li>תיקייה חדשה ריקה על שולחן העבודה — <strong>telegram-calendar-bot</strong></li>
+      <li>חשבון Anthropic קיים + API Key פתוח בדפדפן</li>
+      <li>אפליקציית טלגרם פתוחה — @BotFather נגיש</li>
+      <li>Gmail ייעודי לסוכן פתוח ומחובר</li>
+      <li>הדגמה קצרה של סוכן מוכן — לפתיחה מרשימה</li>
+    </ul>
   </div>
-  <div class="script-body">
-    <div class="script-inner">
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">לפני שניגע בפרויקט — אני רוצה ללמד אתכם משהו שישנה לכם את כל חוויית העבודה עם Claude Code. זה נקרא CLAUDE.md.</div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">תדמיינו שאתם שוכרים קבלן מצוין לשיפוץ הבית. ביום הראשון אתם יושבים איתו ומסבירים: מה הבית, מה כבר בנוי, מה הסגנון שאתם רוצים, מה אסור לגעת בו. Claude Code לא זוכר שיחות קודמות — כל פעם שאתם פותחים שיחה חדשה, הוא מתחיל מאפס. CLAUDE.md הוא המסמך הזה שנמצא בתיקיית הפרויקט, וכל פעם שהוא מתחיל לעבוד — הוא קורא אותו ומגיע מוכן.</div>
-      </div>
-      <div class="sb sb-note">
-        <div class="sb-text">
-          <strong>מה כותבים ב-CLAUDE.md:</strong><br>
-          &#x2022; מה הפרויקט — תיאור קצר<br>
-          &#x2022; ה-stack — Node.js, Telegraf, Anthropic API<br>
-          &#x2022; כללי עבודה — לא לשנות קבצים בלי אישור<br>
-          &#x2022; מבנה התיקיות<br>
-          &#x2022; משתני סביבה — מה מצפים ב-.env
+
+  <div class="divider">פרקים</div>
+
+  <!-- CH1 -->
+  <div class="chapter ch-1" id="c1">
+    <div class="chapter-head" onclick="toggle('c1')">
+      <div class="ch-num">01</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 1</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F3AC; פתיחה: הדגמת הסוכן</div>
+          <div class="ch-meta">
+            <div class="ch-count">3 דק'</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
         </div>
       </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">ואנחנו לא נכתוב אותו ביד. ניגש ל-Claude Code ונגיד לו: "אנחנו מתחילים פרויקט חדש, תכין לי CLAUDE.md מתאים". הוא יכתוב, אנחנו נאשר. ככה זה עובד.</div>
-      </div>
-      <div class="sb sb-tip">
-        <div class="sb-label">&#x1F4A1; טיפ למצלמה</div>
-        <div class="sb-text">רעיון מצוין לנושא שיחה עם הקהל — תשאל אותם: "לפי מה שאמרתם, מה הייתם כותבים ב-CLAUDE.md שלכם?"</div>
-      </div>
     </div>
-  </div>
-</div>
-
-<!-- 1.4 -->
-<div class="script-section" id="s14">
-  <div class="script-header" onclick="toggleSection('s14')">
-    <div class="sh-icon">&#x1F3D7;&#xFE0F;</div>
-    <div class="sh-info">
-      <div class="sh-title">1.4 — ארכיטקטורה: איך הכל מתחבר</div>
-      <div class="sh-subtitle">ציור הזרימה + הסבר Gmail + ICS</div>
-    </div>
-    <div class="sh-time">~7 דק'</div>
-    <div class="sh-toggle">&#x25BE;</div>
-  </div>
-  <div class="script-body">
-    <div class="script-inner">
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">לפני שנבנה — בואו נבין את התמונה הכוללת. אני אצייר את זה.</div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-        <div class="sb-text">ציור על הלוח או מחוות ידיים — הזרימה:<br><br>
-<strong>אתם בטלגרם → Bot Server → Claude API → פעולה → תשובה בחזרה</strong><br><br>
-&#x2022; <strong>Bot Server</strong> — שרת קטן שרץ על המחשב שלכם, מאזין כל הזמן<br>
-&#x2022; כשמגיעה הודעה — שולחים ל-Claude API, המוח של הסוכן<br>
-&#x2022; Claude מחליט: לקרוא יומן? לקבוע פגישה? לשלוח מייל?<br>
-&#x2022; התשובה חוזרת דרך הבוט בטלגרם</div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; איך הסוכן מגיע ליומן?</div>
-        <div class="sb-text">לסוכן אין גישה ישירה ל-Google Calendar שלכם — וזה בכוונה, זה יותר מורכב לחיבור. במקום זה, פתחנו לו כתובת Gmail ייעודית. כשרוצים לקבוע פגישה — הוא שולח מייל עם קובץ זימון סטנדרטי, ה-ICS, וה-Calendar שלכם מזהה אותו אוטומטית. אתם מקבלים זימון בדיוק כמו מכל אדם אחר.</div>
-      </div>
-      <div class="sb sb-tip">
-        <div class="sb-label">&#x1F4A1; טיפ למצלמה</div>
-        <div class="sb-text">יש דרכים ישירות יותר לחבר ל-Calendar API — אבל הן דורשות OAuth מורכב. הגישה הזו עובדת מצוין ל-90% מהצרכים ומהירה לבנות.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ========================================== -->
-<!-- PART 2: LIVE BUILD -->
-<!-- ========================================== -->
-<div class="section-hdr"><h2>&#x1F6E0;&#xFE0F; חלק 2 — בנייה חיה (50–60 דק')</h2></div>
-
-<!-- Step 1 -->
-<div class="script-section" id="s21">
-  <div class="script-header" onclick="toggleSection('s21')">
-    <div class="sh-icon">&#x1F4C2;</div>
-    <div class="sh-info">
-      <div class="sh-title">שלב 1 — קישור התיקייה ל-Claude Code</div>
-      <div class="sh-subtitle">יצירת תיקייה + Open Folder</div>
-    </div>
-    <div class="sh-time">5 דק'</div>
-    <div class="sh-toggle">&#x25BE;</div>
-  </div>
-  <div class="script-body">
-    <div class="script-inner">
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">הדבר הראשון שעושים בכל פרויקט חדש — מקשרים תיקייה. Claude Code צריך לדעת איפה לעבוד.</div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-        <div class="sb-text">פתח Explorer &larr; צור תיקייה חדשה בשם <strong>telegram-calendar-bot</strong></div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-        <div class="sb-text">חזור ל-Claude Code &larr; לחץ על אייקון התיקייה (או File &rarr; Open Folder) &larr; בחר את התיקייה שיצרת</div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">שימו לב — בתחתית המסך רואים את הנתיב של התיקייה שבחרנו. זה אומר ש-Claude Code יודע עכשיו איפה הפרויקט שלנו. כל קובץ שהוא ייצור — ייצור שם.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Step 2 -->
-<div class="script-section" id="s22">
-  <div class="script-header" onclick="toggleSection('s22')">
-    <div class="sh-icon">&#x1F4C4;</div>
-    <div class="sh-info">
-      <div class="sh-title">שלב 2 — יצירת CLAUDE.md וסטרוקטורת הפרויקט</div>
-      <div class="sh-subtitle">פרומפט ראשון + בדיקת תוצאה</div>
-    </div>
-    <div class="sh-time">8 דק'</div>
-    <div class="sh-toggle">&#x25BE;</div>
-  </div>
-  <div class="script-body">
-    <div class="script-inner">
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">עכשיו אני עושה את הדבר הראשון שאני תמיד עושה בפרויקט חדש — מבקש מ-Claude Code להכין את עצמו.</div>
-      </div>
-      <div class="sb sb-prompt" id="ip1">
-        <button class="copy-btn" onclick="copyPrompt('ip1')">&#x1F4CB; העתק</button>
-        <div class="sb-label">&#x2328;&#xFE0F; הנחיה ל-Claude Code</div>
-        <div class="sb-text">אנחנו מתחילים פרויקט חדש שנקרא telegram-calendar-bot. אני רוצה לבנות בוט טלגרם שפועל כעוזר אישי לניהול יומן Google Calendar. הבוט יהיה כתוב ב-Node.js עם ספריית Telegraf, ישתמש ב-Anthropic API עם מודל Claude כמוח, ויתקשר עם Google Calendar על ידי שליחת מיילים עם ICS invites דרך Gmail ייעודי. צור לי: (1) CLAUDE.md מפורט שיסביר לך את הפרויקט בכל שיחה חדשה, (2) מבנה תיקיות מסודר לפרויקט.</div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-        <div class="sb-text">תן ל-Claude Code לעבוד — תראה לקהל שהוא יוצר קבצים ממש בתיקייה.</div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-        <div class="sb-text">כשמסיים — פתח את CLAUDE.md ב-Explorer וקרא בקול קטע ממנו.</div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">שימו לב למה שהוא כתב — הוא לא רק תיאר את הפרויקט, הוא גם הגדיר כללי עבודה לעצמו. זה הכלי הכי חזק שיש לכם. בכל פרויקט שתתחילו — תעשו את זה קודם.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Step 3 -->
-<div class="script-section" id="s23">
-  <div class="script-header" onclick="toggleSection('s23')">
-    <div class="sh-icon">&#x1F4F1;</div>
-    <div class="sh-info">
-      <div class="sh-title">שלב 3 — יצירת בוט הטלגרם</div>
-      <div class="sh-subtitle">BotFather + Token + .env</div>
-    </div>
-    <div class="sh-time">8 דק'</div>
-    <div class="sh-toggle">&#x25BE;</div>
-  </div>
-  <div class="script-body">
-    <div class="script-inner">
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">עכשיו ניצור את הבוט בטלגרם. זה לוקח שתי דקות.</div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-        <div class="sb-text">עבור לטלגרם &rarr; חפש <strong>@BotFather</strong> &rarr; שלח <strong>/newbot</strong><br><br>
-&#x2022; תן שם: <strong>My Calendar Assistant</strong><br>
-&#x2022; תן username שמסתיים ב-bot: <strong>mycalendar_demo_bot</strong><br>
-&#x2022; קבל את ה-Token — שורה ארוכה של מספרים ואותיות</div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">הטוקן הזה הוא ה-ID הסודי של הבוט. מי שיש לו אותו יכול לשלוח הודעות כאילו הוא הבוט שלנו. לכן לא שמים אותו בקוד — שמים אותו בקובץ .env. בואו נסביר ל-Claude Code איך לנהל את זה נכון.</div>
-      </div>
-      <div class="sb sb-prompt" id="ip2">
-        <button class="copy-btn" onclick="copyPrompt('ip2')">&#x1F4CB; העתק</button>
-        <div class="sb-label">&#x2328;&#xFE0F; הנחיה ל-Claude Code</div>
-        <div class="sb-text">קיבלתי Telegram Bot Token מ-BotFather. צור קובץ .env עם מקום לכל המשתני סביבה שנצטרך: TELEGRAM_TOKEN, ANTHROPIC_API_KEY, AGENT_EMAIL, AGENT_EMAIL_PASSWORD. צור גם .env.example ללא הערכים האמיתיים וודא שה-.env נמצא ב-.gitignore.</div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-        <div class="sb-text">הראה את קובץ ה-.env שנוצר — הכנס את ה-Token בפועל.</div>
-      </div>
-      <div class="sb sb-tip">
-        <div class="sb-label">&#x1F4A1; טיפ למצלמה</div>
-        <div class="sb-text">הסבר לקהל: ה-.env.example זה בשביל אנשים אחרים שיורידו את הפרויקט — הם יודעים מה צריך למלא בלי לראות את הערכים האמיתיים שלך.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Step 4 -->
-<div class="script-section" id="s24">
-  <div class="script-header" onclick="toggleSection('s24')">
-    <div class="sh-icon">&#x1F528;</div>
-    <div class="sh-info">
-      <div class="sh-title">שלב 4 — Claude Code בונה את הבוט</div>
-      <div class="sh-subtitle">פרומפט הבנייה + הרצה + בדיקה ראשונה</div>
-    </div>
-    <div class="sh-time">15 דק'</div>
-    <div class="sh-toggle">&#x25BE;</div>
-  </div>
-  <div class="script-body">
-    <div class="script-inner">
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">עכשיו הרגע שכולם מחכים לו. אני נותן ל-Claude Code לבנות. שימו לב לאיך אני מנסח — ספציפי, ברור, עם כל ההקשר.</div>
-      </div>
-      <div class="sb sb-prompt" id="ip3">
-        <button class="copy-btn" onclick="copyPrompt('ip3')">&#x1F4CB; העתק</button>
-        <div class="sb-label">&#x2328;&#xFE0F; הנחיה ל-Claude Code</div>
-        <div class="sb-text">בנה את קובץ index.js הראשי של הפרויקט. הבוט צריך: (1) להתחבר לטלגרם עם Telegraf, (2) לקבל כל הודעת טקסט מהמשתמש, (3) לשלוח אותה ל-Claude API עם system prompt של עוזר יומן אישי שעונה בעברית, (4) להחזיר את התשובה בחזרה לטלגרם. השתמש במודל claude-sonnet-4-20250514. כלול גם טיפול בשגיאות בסיסי. אחרי שתסיים — ספר לי אילו packages צריך להתקין.</div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-        <div class="sb-text">תן לו לכתוב — הראה לקהל שהוא בונה קובץ אמיתי. כשמסיים — Claude Code יתקין packages אוטומטית, או יבקש אישור. לאחר ההתקנה — Claude Code יריץ את הבוט.</div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">עכשיו הרגע האמת.</div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-        <div class="sb-text">עבור לטלגרם — מצא את הבוט שיצרת — שלח לו: <strong>שלום</strong></div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">ראיתם? הבוט עונה. זה Node.js שרץ על המחשב שלנו, מחובר ל-Claude API, ומגיב בטלגרם. בנינו את זה ב-15 דקות.</div>
-      </div>
-      <div class="sb sb-tip">
-        <div class="sb-label">&#x1F4A1; טיפ למצלמה</div>
-        <div class="sb-text">אם משהו לא עובד — אל תקפוץ לתקן. הראה לקהל איך אתה מבקש מ-Claude Code לאבחן ולתקן. זה חלק מהלמידה שלהם.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Step 5 -->
-<div class="script-section" id="s25">
-  <div class="script-header" onclick="toggleSection('s25')">
-    <div class="sh-icon">&#x1F4C5;</div>
-    <div class="sh-info">
-      <div class="sh-title">שלב 5 — הוספת יכולת ניהול יומן</div>
-      <div class="sh-subtitle">Gmail setup + ICS + בדיקה חיה</div>
-    </div>
-    <div class="sh-time">18 דק'</div>
-    <div class="sh-toggle">&#x25BE;</div>
-  </div>
-  <div class="script-body">
-    <div class="script-inner">
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; הכנת Gmail לסוכן</div>
-        <div class="sb-text">
-&#x2022; Google Account &rarr; Security &rarr; <strong>2-Step Verification</strong> — הפעל<br>
-&#x2022; חזור ל-Security &rarr; <strong>App Passwords</strong> &rarr; צור סיסמה ל-Mail<br>
-&#x2022; העתק &larr; שמור ב-.env תחת AGENT_EMAIL_PASSWORD
+    <div class="ch-content">
+      <div class="ch-inner">
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״לפני שנתחיל — אני רוצה להראות לכם לאן אנחנו הולכים.״</div>
         </div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">למה אנחנו צריכים App Password ולא סיסמה רגילה? כי Google לא מאפשרת לאפליקציות חיצוניות להתחבר עם הסיסמה הרגילה מטעמי אבטחה. App Password זה סיסמה מיוחדת שנוצרת רק לשימוש הזה.</div>
-      </div>
-      <div class="sb sb-prompt" id="ip4">
-        <button class="copy-btn" onclick="copyPrompt('ip4')">&#x1F4CB; העתק</button>
-        <div class="sb-label">&#x2328;&#xFE0F; הנחיה ל-Claude Code</div>
-        <div class="sb-text">הוסף ל-index.js יכולת לנהל יומן. כשהמשתמש מבקש לקבוע פגישה — הסוכן צריך לשלוח מייל מ-AGENT_EMAIL אל [המייל שלי] עם ICS invite. השתמש ב-nodemailer. ה-ICS צריך לכלול: כותרת הפגישה, תאריך ושעה, משך של שעה כברירת מחדל, וקישור Google Meet. הוסף גם יכולת לענות על "מה יש לי ביומן" עם תשובה שמסבירה שהוא יכול לראות פגישות שהוא קבע.</div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; בדיקה חיה</div>
-        <div class="sb-text">
-&#x2022; עבור לטלגרם — שלח: <strong>"תקבע לי פגישה מחר בעשר בבוקר עם דני, נושא שיווק"</strong><br>
-&#x2022; הראה שהמייל הגיע ל-Gmail — הראה שהאירוע נכנס ל-Calendar<br>
-&#x2022; שלח: <strong>"מה יש לי ביומן השבוע?"</strong> — הראה את התשובה
+        <div class="block block-show">
+          <div class="block-label">&#x1F441; מה להראות</div>
+          <div class="block-text">הדגם את הסוכן שכבר בנית — שלח הודעה בטלגרם, תן להם לראות תגובה חיה</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״מה שרואים פה — בוט טלגרם שאפשר לשלוח לו בעברית: 'תקבע לי פגישה מחר בעשר', והוא מסדר את זה ביומן. אפשר לשאול אותו מה יש לי השבוע, לבקש לבטל פגישה — הכל בשפה טבעית, הכל דרך טלגרם. ואנחנו הולכים לבנות את זה היום, מאפס, ביחד.״</div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Step 6 -->
-<div class="script-section" id="s26">
-  <div class="script-header" onclick="toggleSection('s26')">
-    <div class="sh-icon">&#x2728;</div>
-    <div class="sh-info">
-      <div class="sh-title">שלב 6 — שיפור ה-System Prompt</div>
-      <div class="sh-subtitle">אישיות + תאריך דינמי + אישור לפני פעולה</div>
-    </div>
-    <div class="sh-time">8 דק'</div>
-    <div class="sh-toggle">&#x25BE;</div>
-  </div>
-  <div class="script-body">
-    <div class="script-inner">
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">הבוט עובד — אבל עכשיו נהפוך אותו לחכם ואישי יותר. ה-system prompt זה האישיות של הסוכן. זה הדבר שקובע איך הוא מדבר, מה הוא יכול לעשות, ואיך הוא מתנהג.</div>
-      </div>
-      <div class="sb sb-prompt" id="ip5">
-        <button class="copy-btn" onclick="copyPrompt('ip5')">&#x1F4CB; העתק</button>
-        <div class="sb-label">&#x2328;&#xFE0F; הנחיה ל-Claude Code</div>
-        <div class="sb-text">שדרג את ה-system prompt של הסוכן. הוא צריך לדעת: שמו הוא CalBot, הוא עוזר יומן אישי מקצועי. התאריך והשעה הנוכחיים מועברים אליו דינמית בכל הודעה. הוא יכול: לקבוע פגישות, לשלוח תזכורות, לבטל אירועים, לענות על שאלות לגבי היומן. הוא עונה בעברית, קצר ולעניין, ומאשר כל פעולה לפני שמבצע אותה.</div>
-      </div>
-      <div class="sb sb-camera">
-        <div class="sb-label">&#x1F441;&#xFE0F; מה להראות למצלמה</div>
-        <div class="sb-text">הדגם את ההבדל — שלח אותה הודעה ותראה תשובה אחרת ויותר טובה.</div>
-      </div>
-      <div class="sb sb-tip">
-        <div class="sb-label">&#x1F4A1; טיפ למצלמה</div>
-        <div class="sb-text">הסבר לקהל: שינינו 20 שורות טקסט וקיבלנו בוט אחר לגמרי. זה הכוח של system prompt.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ========================================== -->
-<!-- PART 3: SUMMARY -->
-<!-- ========================================== -->
-<div class="section-hdr"><h2>&#x1F3C1; חלק 3 — סיכום (10 דק')</h2></div>
-
-<div class="script-section" id="s31">
-  <div class="script-header" onclick="toggleSection('s31')">
-    <div class="sh-icon">&#x1F3C6;</div>
-    <div class="sh-info">
-      <div class="sh-title">3.1 — מה בנינו היום</div>
-      <div class="sh-subtitle">סיכום + מה הלאה + הפילוסופיה</div>
-    </div>
-    <div class="sh-time">10 דק'</div>
-    <div class="sh-toggle">&#x25BE;</div>
-  </div>
-  <div class="script-body">
-    <div class="script-inner">
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">בואו נעצור רגע ונסתכל על מה שהיה לנו לפני שעה — תיקייה ריקה. ומה יש עכשיו? בוט טלגרם שמגיב בעברית, מחובר ל-Claude API — AI אמיתי מאחורה, קובע פגישות ב-Google Calendar, קובץ CLAUDE.md שיאפשר לנו להמשיך לפתח בשיחות הבאות. ולא כתבנו שורת קוד אחת ביד.</div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; איך מעלים לאוויר</div>
-        <div class="sb-text">הבוט כרגע רץ רק כשהמחשב שלכם דלוק. בשביל שירות אמיתי שרץ 24/7 — צריך שרת. Railway.app — הכי פשוט, יש פלאן חינמי. Render.com — אלטרנטיבה טובה.</div>
-      </div>
-      <div class="sb sb-note">
-        <div class="sb-text">
-          <strong>רעיונות להרחבה:</strong><br>
-          &#x2022; תזכורות אוטומטיות — שעה לפני כל פגישה<br>
-          &#x2022; סיכום בוקר — כל יום ב-8:00 מה יש היום<br>
-          &#x2022; WhatsApp — עם Green API, אותו קוד בדיוק<br>
-          &#x2022; זיכרון לסוכן — שמירת context בקובץ JSON<br>
-          &#x2022; ניהול משימות — חיבור ל-Notion או Trello
+  <!-- CH2 -->
+  <div class="chapter ch-2" id="c2">
+    <div class="chapter-head" onclick="toggle('c2')">
+      <div class="ch-num">02</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 2</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F4BB; מה זה Claude Code</div>
+          <div class="ch-meta">
+            <div class="ch-count">4 דק'</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
         </div>
       </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; הפילוסופיה — הדבר האחרון</div>
-        <div class="sb-text">הדבר האחרון שאני רוצה להגיד לכם — ואני מאמין בזה מאוד. אתם לא צריכים להבין כל שורת קוד. אתם צריכים להיות מנהל פרויקט טוב של AI. להסביר בבהירות מה אתם רוצים, לאשר, לבדוק, לבקש תיקונים. זה הכישור של 2025.</div>
-      </div>
-      <div class="sb sb-say">
-        <div class="sb-label">&#x1F5E3;&#xFE0F; תקרא מילה במילה</div>
-        <div class="sb-text">מה שבניתם היום — לפני שנה וחצי היה דורש מפתח full-stack עם כמה שבועות עבודה. היום זה שעה עם Claude Code וברצון. אתם לא לומדים לתכנת — אתם לומדים לנהל את ה-AI שמתכנת בשבילכם.</div>
+    </div>
+    <div class="ch-content">
+      <div class="ch-inner">
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״כולנו מכירים Claude.ai — נכנסים לאתר, כותבים שאלה, מקבלים תשובה. זה נהדר, אבל זה רק צ'אט. Claude Code זה משהו אחר לגמרי.״</div>
+        </div>
+        <div class="block block-show">
+          <div class="block-label">&#x1F441; מה להראות</div>
+          <div class="block-text">הצבע על שלושת הטאבים באפליקציה: Chat, Cowork, Code</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״שלושה מצבים שונים באפליקציה אחת. Chat — זה Claude הרגיל שכולם מכירים. Cowork — עוזר עם קבצים ומסמכים. Code — זה מה שאנחנו עובדים איתו היום. ב-Code, Claude לא רק עונה — הוא פועל. הוא יוצר קבצים על המחשב שלכם, הוא כותב קוד, הוא מריץ אותו, הוא מתקן שגיאות — הכל בתוך האפליקציה הזו, ללא Terminal, ללא התקנות מסובכות.״</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״אני עובד לפי גישה שאני קורא לה: אתם האדריכל, Claude Code הוא הקבלן. אתם מחליטים מה לבנות ואיך זה אמור לעבוד — הוא בונה. לא צריך לדעת לקרוא קוד. צריך לדעת לתקשר בצורה ברורה.״</div>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- CH3 -->
+  <div class="chapter ch-3" id="c3">
+    <div class="chapter-head" onclick="toggle('c3')">
+      <div class="ch-num">03</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 3</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F4C4; CLAUDE.md — תדריך לקבלן</div>
+          <div class="ch-meta">
+            <div class="ch-count">5 דק'</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ch-content">
+      <div class="ch-inner">
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״לפני שניגע בפרויקט — אני רוצה ללמד אתכם משהו שישנה לכם את כל חוויית העבודה עם Claude Code. זה נקרא CLAUDE.md.״</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״תדמיינו שאתם שוכרים קבלן מצוין לשיפוץ הבית. ביום הראשון אתם יושבים איתו ומסבירים: מה הבית, מה כבר בנוי, מה הסגנון שאתם רוצים, מה אסור לגעת בו. Claude Code לא זוכר שיחות קודמות — כל פעם שאתם פותחים שיחה חדשה, הוא מתחיל מאפס. CLAUDE.md הוא המסמך הזה שנמצא בתיקיית הפרויקט, וכל פעם שהוא מתחיל לעבוד — הוא קורא אותו ומגיע מוכן.״</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״מה כותבים בו? מה הפרויקט — תיאור קצר. ה-stack — Node.js, Telegraf, Anthropic API. כללי עבודה — לא לשנות קבצים בלי אישור. מבנה התיקיות. משתני סביבה. ואנחנו לא נכתוב אותו ביד — ניגש ל-Claude Code ונגיד לו: 'אנחנו מתחילים פרויקט חדש, תכין לי CLAUDE.md מתאים'. הוא יכתוב, אנחנו נאשר. ככה זה עובד.״</div>
+        </div>
+        <div class="block block-tip">
+          <div class="block-label">&#x1F4A1; טיפ</div>
+          <div class="block-text">שאל את הקהל: ״לפי מה שאמרתם, מה הייתם כותבים ב-CLAUDE.md שלכם?״</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH4 -->
+  <div class="chapter ch-4" id="c4">
+    <div class="chapter-head" onclick="toggle('c4')">
+      <div class="ch-num">04</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 4</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F5FA;&#xFE0F; ארכיטקטורה</div>
+          <div class="ch-meta">
+            <div class="ch-count">5 דק'</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ch-content">
+      <div class="ch-inner">
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״לפני שנבנה — בואו נבין את התמונה הכוללת.״</div>
+        </div>
+        <div class="block block-show">
+          <div class="block-label">&#x1F441; מה להראות</div>
+          <div class="block-text">ציור/הסבר בידיים: אתם בטלגרם ← Bot Server ← Claude API ← פעולה ← תשובה בחזרה</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״Bot Server — שרת קטן שרץ על המחשב שלכם, מאזין כל הזמן להודעות. כשמגיעה הודעה — שולחים אותה ל-Claude API, המוח של הסוכן. Claude מחליט מה לעשות: לקרוא יומן? לקבוע פגישה? התשובה חוזרת אליכם דרך הבוט בטלגרם.״</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״לסוכן אין גישה ישירה ל-Google Calendar שלכם — וזה בכוונה. במקום זה, פתחנו לו כתובת Gmail ייעודית. כשרוצים לקבוע פגישה — הוא שולח מייל עם קובץ זימון סטנדרטי, ה-ICS, וה-Calendar שלכם מזהה אותו אוטומטית.״</div>
+        </div>
+        <div class="block block-tip">
+          <div class="block-label">&#x1F4A1; טיפ</div>
+          <div class="block-text">״יש דרכים ישירות יותר לחבר ל-Calendar API — אבל הן דורשות הגדרות OAuth מורכבות. הגישה הזו עובדת מצוין ל-90% מהצרכים ומהירה יותר לבנות.״</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH5 -->
+  <div class="chapter ch-5" id="c5">
+    <div class="chapter-head" onclick="toggle('c5')">
+      <div class="ch-num">05</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 5</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F4C1; הקמה: תיקייה + בוט + .env</div>
+          <div class="ch-meta">
+            <div class="ch-count">7 דק'</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ch-content">
+      <div class="ch-inner">
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״הדבר הראשון שעושים בכל פרויקט חדש — מקשרים תיקייה. Claude Code צריך לדעת איפה לעבוד.״</div>
+        </div>
+        <div class="block block-show">
+          <div class="block-label">&#x1F441; מה להראות</div>
+          <div class="block-text">פתח Explorer ← צור תיקייה חדשה בשם <strong>telegram-calendar-bot</strong> ← חזור ל-Claude Code ← לחץ על אייקון התיקייה ← בחר את התיקייה</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״שימו לב — בתחתית המסך רואים את הנתיב של התיקייה שבחרנו. זה אומר ש-Claude Code יודע עכשיו איפה הפרויקט שלנו.״</div>
+        </div>
+        <div class="block block-show">
+          <div class="block-label">&#x1F441; מה להראות</div>
+          <div class="block-text">עבור לטלגרם — חפש @BotFather — שלח /newbot — תן שם לבוט — קבל Token</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״הטוקן הזה הוא ה-ID הסודי של הבוט. מי שיש לו אותו יכול לשלוח הודעות כאילו הוא הבוט שלנו. לכן לא שמים אותו בקוד — שמים אותו בקובץ .env.״</div>
+        </div>
+        <div class="block block-prompt">
+          <div class="prompt-header">
+            <div class="prompt-label">&#x2328;&#xFE0F; פרומפט</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">העתק</button>
+          </div>
+          <div class="prompt-text">קיבלתי Telegram Bot Token מ-BotFather. צור קובץ .env עם מקום לכל המשתני סביבה שנצטרך: TELEGRAM_TOKEN, ANTHROPIC_API_KEY, AGENT_EMAIL, AGENT_EMAIL_PASSWORD. צור גם .env.example ללא הערכים האמיתיים וודא שה-.env נמצא ב-.gitignore.</div>
+        </div>
+        <div class="block block-show">
+          <div class="block-label">&#x1F441; מה להראות</div>
+          <div class="block-text">הכנס את ה-Token בפועל לקובץ ה-.env</div>
+        </div>
+        <div class="block block-tip">
+          <div class="block-label">&#x1F4A1; טיפ</div>
+          <div class="block-text">״ה-.env.example זה בשביל אנשים אחרים שיורידו את הפרויקט — הם יודעים מה צריך למלא בלי לראות את הערכים האמיתיים שלך.״</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH6 -->
+  <div class="chapter ch-6" id="c6">
+    <div class="chapter-head" onclick="toggle('c6')">
+      <div class="ch-num">06</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 6</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F527; פרומפט ראשון: CLAUDE.md ומבנה</div>
+          <div class="ch-meta">
+            <div class="ch-count">5 דק'</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ch-content">
+      <div class="ch-inner">
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״עכשיו אני עושה את הדבר הראשון שאני תמיד עושה בפרויקט חדש — מבקש מ-Claude Code להכין את עצמו.״</div>
+        </div>
+        <div class="block block-prompt">
+          <div class="prompt-header">
+            <div class="prompt-label">&#x2328;&#xFE0F; פרומפט</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">העתק</button>
+          </div>
+          <div class="prompt-text">אנחנו מתחילים פרויקט חדש שנקרא telegram-calendar-bot. אני רוצה לבנות בוט טלגרם שפועל כעוזר אישי לניהול יומן Google Calendar. הבוט יהיה כתוב ב-Node.js עם ספריית Telegraf, ישתמש ב-Anthropic API עם מודל Claude כמוח, ויתקשר עם Google Calendar על ידי שליחת מיילים עם ICS invites דרך Gmail ייעודי. צור לי: (1) CLAUDE.md מפורט שיסביר לך את הפרויקט בכל שיחה חדשה, (2) מבנה תיקיות מסודר לפרויקט.</div>
+        </div>
+        <div class="block block-show">
+          <div class="block-label">&#x1F441; מה להראות</div>
+          <div class="block-text">תן ל-Claude Code לעבוד — הראה לקהל שהוא יוצר קבצים ממש בתיקייה. כשמסיים — פתח את CLAUDE.md ב-Explorer וקרא בקול קטע ממנו.</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״שימו לב למה שהוא כתב — הוא לא רק תיאר את הפרויקט, הוא גם הגדיר כללי עבודה לעצמו. זה הכלי הכי חזק שיש לכם.״</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH7 -->
+  <div class="chapter ch-7" id="c7">
+    <div class="chapter-head" onclick="toggle('c7')">
+      <div class="ch-num">07</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 7</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x26A1; בניית הבוט הבסיסי</div>
+          <div class="ch-meta">
+            <div class="ch-count">8 דק'</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ch-content">
+      <div class="ch-inner">
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״עכשיו הרגע שכולם מחכים לו. אני נותן ל-Claude Code לבנות. שימו לב לאיך אני מנסח — ספציפי, ברור, עם כל ההקשר.״</div>
+        </div>
+        <div class="block block-prompt">
+          <div class="prompt-header">
+            <div class="prompt-label">&#x2328;&#xFE0F; פרומפט</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">העתק</button>
+          </div>
+          <div class="prompt-text">בנה את קובץ index.js הראשי של הפרויקט. הבוט צריך: (1) להתחבר לטלגרם עם Telegraf, (2) לקבל כל הודעת טקסט מהמשתמש, (3) לשלוח אותה ל-Claude API עם system prompt של עוזר יומן אישי שעונה בעברית, (4) להחזיר את התשובה בחזרה לטלגרם. השתמש במודל claude-sonnet-4-20250514. כלול גם טיפול בשגיאות בסיסי. אחרי שתסיים — ספר לי אילו packages צריך להתקין.</div>
+        </div>
+        <div class="block block-show">
+          <div class="block-label">&#x1F441; מה להראות</div>
+          <div class="block-text">תן לו לכתוב. Claude Code יתקין את ה-packages אוטומטית, או יבקש ממך אישור. לאחר ההתקנה — Claude Code יריץ את הבוט.</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״עכשיו הרגע האמת.״</div>
+        </div>
+        <div class="block block-show">
+          <div class="block-label">&#x1F441; מה להראות</div>
+          <div class="block-text">עבור לטלגרם — מצא את הבוט שיצרת — שלח לו: <strong>שלום</strong></div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״ראיתם? הבוט עונה. זה Node.js שרץ על המחשב שלנו, מחובר ל-Claude API, ומגיב בטלגרם. בנינו את זה ב-8 דקות.״</div>
+        </div>
+        <div class="block block-tip">
+          <div class="block-label">&#x1F4A1; טיפ</div>
+          <div class="block-text">״אם משהו לא עובד — אל תקפוץ לתקן. הראה לקהל איך אתה מבקש מ-Claude Code לאבחן ולתקן. זה חלק מהלמידה שלהם.״</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH8 -->
+  <div class="chapter ch-8" id="c8">
+    <div class="chapter-head" onclick="toggle('c8')">
+      <div class="ch-num">08</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 8</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F4C5; הוספת ניהול יומן</div>
+          <div class="ch-meta">
+            <div class="ch-count">8 דק'</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ch-content">
+      <div class="ch-inner">
+        <div class="block block-show">
+          <div class="block-label">&#x1F441; מה להראות</div>
+          <div class="block-text">עבור ל-Gmail החדש של הסוכן — Google Account ← Security ← 2-Step Verification — הפעל. חזור ל-Security ← App Passwords ← צור סיסמה ← העתק ← שמור ב-.env תחת AGENT_EMAIL_PASSWORD</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״למה אנחנו צריכים App Password ולא סיסמה רגילה? כי Google לא מאפשרת לאפליקציות חיצוניות להתחבר עם הסיסמה הרגילה מטעמי אבטחה. App Password זה סיסמה מיוחדת שנוצרת רק לשימוש הזה.״</div>
+        </div>
+        <div class="block block-prompt">
+          <div class="prompt-header">
+            <div class="prompt-label">&#x2328;&#xFE0F; פרומפט</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">העתק</button>
+          </div>
+          <div class="prompt-text">הוסף ל-index.js יכולת לנהל יומן. כשהמשתמש מבקש לקבוע פגישה — הסוכן צריך לשלוח מייל מ-AGENT_EMAIL אל [המייל שלי] עם ICS invite. השתמש ב-nodemailer. ה-ICS צריך לכלול: כותרת הפגישה, תאריך ושעה, משך של שעה כברירת מחדל, וקישור Google Meet. הוסף גם יכולת לענות על 'מה יש לי ביומן' עם תשובה שמסבירה שהוא יכול לראות פגישות שהוא קבע.</div>
+        </div>
+        <div class="block block-show">
+          <div class="block-label">&#x1F441; מה להראות</div>
+          <div class="block-text">עבור לטלגרם — שלח: <strong>״תקבע לי פגישה מחר בעשר בבוקר עם דני, נושא שיווק״</strong>. הראה שהמייל הגיע ל-Gmail שלך. הראה שהאירוע נכנס ל-Calendar. שלח: <strong>״מה יש לי ביומן השבוע?״</strong> — הראה את התשובה.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH9 -->
+  <div class="chapter ch-9" id="c9">
+    <div class="chapter-head" onclick="toggle('c9')">
+      <div class="ch-num">09</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 9</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F3C1; שדרוג + סיכום</div>
+          <div class="ch-meta">
+            <div class="ch-count">5 דק'</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ch-content">
+      <div class="ch-inner">
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״הבוט עובד — אבל עכשיו נהפוך אותו לחכם ואישי יותר. ה-system prompt זה האישיות של הסוכן. זה הדבר שקובע איך הוא מדבר, מה הוא יכול לעשות, ואיך הוא מתנהג.״</div>
+        </div>
+        <div class="block block-prompt">
+          <div class="prompt-header">
+            <div class="prompt-label">&#x2328;&#xFE0F; פרומפט</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">העתק</button>
+          </div>
+          <div class="prompt-text">שדרג את ה-system prompt של הסוכן. הוא צריך לדעת: שמו הוא CalBot, הוא עוזר יומן אישי מקצועי. התאריך והשעה הנוכחיים מועברים אליו דינמית בכל הודעה. הוא יכול: לקבוע פגישות, לשלוח תזכורות, לבטל אירועים, לענות על שאלות לגבי היומן. הוא עונה בעברית, קצר ולעניין, ומאשר כל פעולה לפני שמבצע אותה.</div>
+        </div>
+        <div class="block block-show">
+          <div class="block-label">&#x1F441; מה להראות</div>
+          <div class="block-text">הדגם את ההבדל — שלח אותה הודעה ותראה תשובה אחרת ויותר טובה.</div>
+        </div>
+        <div class="block block-tip">
+          <div class="block-label">&#x1F4A1; טיפ</div>
+          <div class="block-text">הסבר לקהל: ״שינינו 20 שורות טקסט וקיבלנו בוט אחר לגמרי. זה הכוח של system prompt.״</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״בואו נעצור רגע ונסתכל על מה שהיה לנו לפני שעה — תיקייה ריקה. ומה יש עכשיו? בוט טלגרם שמגיב בעברית. מחובר ל-Claude API. קובע פגישות ב-Google Calendar. קובץ CLAUDE.md שיאפשר לנו להמשיך לפתח בשיחות הבאות. ולא כתבנו שורת קוד אחת ביד.״</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״הדבר האחרון שאני רוצה להגיד לכם — אתם לא צריכים להבין כל שורת קוד. אתם צריכים להיות מנהל פרויקט טוב של AI. להסביר בבהירות מה אתם רוצים, לאשר, לבדוק, לבקש תיקונים. זה הכישור של 2025.״</div>
+        </div>
+        <div class="block block-say">
+          <div class="block-label">&#x1F5E3; מה לומר</div>
+          <div class="block-text">״מה שבניתם היום — לפני שנה וחצי היה דורש מפתח full-stack עם כמה שבועות עבודה. היום זה שעה עם Claude Code וברצון. אתם לא לומדים לתכנת — אתם לומדים לנהל את ה-AI שמתכנת בשבילכם.״</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-</div><!-- /page-wrapper -->
-
-<footer>
-  <div class="footer-line">&#x1F534; סילבוס מרצה — בוט טלגרם AI עם Claude Code Desktop</div>
-</footer>
+<footer>סילבוס מרצה &middot; בוט טלגרם עם Claude Code &middot; למרצה בלבד &#x1F512;</footer>
 
 <script>
 window.addEventListener('scroll',function(){
   var h=document.documentElement;
-  var pct=(h.scrollTop||document.body.scrollTop)/((h.scrollHeight||document.body.scrollHeight)-h.clientHeight)*100;
-  document.getElementById('progressFill').style.width=Math.min(pct,100)+'%';
+  var p=(h.scrollTop||document.body.scrollTop)/((h.scrollHeight||document.body.scrollHeight)-h.clientHeight)*100;
+  document.getElementById('pf').style.width=Math.min(p,100)+'%';
 });
 
-setTimeout(function(){
-  document.getElementById('timelineFill').style.width='100%';
-  document.querySelectorAll('.timeline-seg').forEach(function(s,i){
-    setTimeout(function(){s.style.opacity='1'},i*200);
-  });
-},500);
-
-function toggleSection(id){
-  document.getElementById(id).classList.toggle('open');
+function toggle(id){
+  var el=document.getElementById(id);
+  var open=el.classList.contains('open');
+  document.querySelectorAll('.chapter').forEach(function(c){c.classList.remove('open')});
+  if(!open)el.classList.add('open');
 }
 
-function copyPrompt(id){
-  var box=document.getElementById(id);
-  var text=box.querySelector('.sb-text').innerText;
+function copyPrompt(btn){
+  var text=btn.closest('.block-prompt').querySelector('.prompt-text').textContent.trim();
   navigator.clipboard.writeText(text).then(function(){
-    var btn=box.querySelector('.copy-btn');
-    btn.textContent='\u2705 הועתק!';
+    btn.textContent='הועתק \u2713';
     btn.classList.add('copied');
-    setTimeout(function(){btn.textContent='\uD83D\uDCCB העתק';btn.classList.remove('copied')},2000);
+    setTimeout(function(){
+      btn.textContent='העתק';
+      btn.classList.remove('copied');
+    },2000);
+  }).catch(function(){
+    var ta=document.createElement('textarea');
+    ta.value=text;
+    ta.style.position='fixed';
+    ta.style.opacity='0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent='הועתק \u2713';
+    btn.classList.add('copied');
+    setTimeout(function(){
+      btn.textContent='העתק';
+      btn.classList.remove('copied');
+    },2000);
   });
 }
 
-var obs=new IntersectionObserver(function(entries){
-  entries.forEach(function(e){
+var obs=new IntersectionObserver(function(en){
+  en.forEach(function(e){
     if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)'}
   });
-},{threshold:0.1});
-document.querySelectorAll('.script-section,.checklist-card').forEach(function(c,i){
-  c.style.opacity='0';c.style.transform='translateY(16px)';
-  c.style.transition='opacity .4s ease '+(i*.04)+'s,transform .4s ease '+(i*.04)+'s';
-  obs.observe(c);
+},{threshold:0.06});
+document.querySelectorAll('.chapter,.stat,.checklist-card').forEach(function(el,i){
+  el.style.opacity='0';el.style.transform='translateY(14px)';
+  el.style.transition='opacity .38s ease '+(i*.045)+'s,transform .38s ease '+(i*.045)+'s';
+  obs.observe(el);
 });
 </script>
 </body>

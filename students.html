@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בוט טלגרם עם Claude Code — סילבוס</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0e17;
+  --surface:#13161f;
+  --surface2:#191d2b;
+  --border:#232740;
+  --text:#e4e6f0;
+  --muted:#555e80;
+  --accent:#7c6ff7;
+  --accent-glow:rgba(124,111,247,.18);
+  --cyan:#22d3ee;
+  --cyan-glow:rgba(34,211,238,.15);
+  --green:#3dd68c;
+  --radius:14px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  min-height:100vh;
+}
+
+/* Progress bar */
+.prog{position:fixed;top:0;left:0;right:0;height:2px;z-index:99;background:rgba(255,255,255,.04)}
+.prog-fill{height:100%;width:0%;background:linear-gradient(90deg,#7c6ff7,#22d3ee,#f472b6);transition:width .1s}
+
+/* Hero */
+.hero{
+  padding:52px 20px 56px;
+  text-align:center;
+  background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(124,111,247,.14) 0%,transparent 70%);
+  border-bottom:1px solid var(--border);
+}
+.badge{
+  display:inline-block;
+  background:var(--accent-glow);
+  border:1px solid rgba(124,111,247,.3);
+  color:#a89ff9;
+  font-size:.78rem;
+  font-weight:700;
+  letter-spacing:.6px;
+  padding:5px 14px;
+  border-radius:20px;
+  margin-bottom:18px;
+}
+.hero h1{
+  font-size:clamp(1.9rem,5vw,2.8rem);
+  font-weight:900;
+  color:#fff;
+  margin-bottom:10px;
+  letter-spacing:-.5px;
+}
+.hero p{
+  color:#6b7494;
+  font-size:.97rem;
+  max-width:520px;
+  margin:0 auto 28px;
+}
+.meta-row{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.meta-chip{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:6px 14px;
+  font-size:.84rem;
+  font-weight:600;
+  color:#8b93b5;
+}
+
+/* Layout */
+.wrap{
+  max-width:700px;
+  margin:0 auto;
+  padding:44px 20px 80px;
+}
+
+/* Stats */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:32px;
+}
+.stat{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px 12px;
+  text-align:center;
+}
+.stat-num{
+  font-size:1.7rem;
+  font-weight:900;
+  color:var(--accent);
+  line-height:1;
+  margin-bottom:5px;
+}
+.stat-label{font-size:.75rem;color:var(--muted);font-weight:600}
+
+/* Divider */
+.divider{
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:1px;
+  color:var(--muted);
+  text-transform:uppercase;
+  margin:0 0 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+
+/* Chapter */
+.chapter{
+  margin-bottom:8px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  background:var(--surface);
+}
+.chapter-head{
+  display:flex;
+  align-items:center;
+  gap:0;
+  cursor:pointer;
+  user-select:none;
+  transition:background .15s;
+}
+.chapter-head:hover{background:var(--surface2)}
+
+.ch-num{
+  width:52px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  align-self:stretch;
+  font-size:.7rem;
+  font-weight:900;
+  color:var(--muted);
+  letter-spacing:1px;
+  border-left:1px solid var(--border);
+  position:relative;
+}
+.ch-num::after{
+  content:"";
+  position:absolute;
+  top:0;right:0;bottom:0;
+  width:3px;
+}
+.ch-1 .ch-num::after{background:linear-gradient(180deg,#7c6ff7,#6366f1)}
+.ch-2 .ch-num::after{background:linear-gradient(180deg,#3dd68c,#10b981)}
+.ch-3 .ch-num::after{background:linear-gradient(180deg,#a78bfa,#8b5cf6)}
+.ch-4 .ch-num::after{background:linear-gradient(180deg,#38bdf8,#0ea5e9)}
+.ch-5 .ch-num::after{background:linear-gradient(180deg,#f472b6,#ec4899)}
+.ch-6 .ch-num::after{background:linear-gradient(180deg,#fb923c,#f97316)}
+.ch-7 .ch-num::after{background:linear-gradient(180deg,#3dd68c,#10b981)}
+.ch-8 .ch-num::after{background:linear-gradient(180deg,#fbbf24,#f59e0b)}
+.ch-9 .ch-num::after{background:linear-gradient(180deg,#f87171,#ef4444)}
+
+.ch-info{
+  flex:1;
+  padding:16px 16px 16px 12px;
+  min-width:0;
+}
+.ch-label{
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.5px;
+  color:var(--muted);
+  text-transform:uppercase;
+  margin-bottom:2px;
+}
+.ch-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.ch-title{
+  font-size:.97rem;
+  font-weight:800;
+  color:var(--text);
+}
+.ch-meta{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-shrink:0;
+}
+.ch-count{
+  font-size:.75rem;
+  color:var(--muted);
+  font-weight:600;
+  white-space:nowrap;
+}
+.ch-dur{
+  font-size:.72rem;
+  color:var(--muted);
+  font-weight:600;
+  white-space:nowrap;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:2px 8px;
+}
+.arrow{
+  font-size:.7rem;
+  color:var(--muted);
+  transition:transform .25s;
+}
+.chapter.open .arrow{transform:rotate(180deg)}
+
+/* Lessons panel */
+.lessons{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .4s cubic-bezier(.4,0,.2,1);
+}
+.chapter.open .lessons{
+  max-height:2000px;
+  border-top:1px solid var(--border);
+}
+
+.lesson{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding:12px 16px 12px 12px;
+  border-bottom:1px solid var(--border);
+  transition:background .15s;
+}
+.lesson:last-child{border-bottom:none}
+.lesson:hover{background:var(--surface2)}
+
+.l-num{
+  width:24px;
+  height:24px;
+  border-radius:6px;
+  font-size:.7rem;
+  font-weight:800;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  margin-top:2px;
+}
+.ch-1 .l-num{background:rgba(124,111,247,.15);color:#a89ff9}
+.ch-2 .l-num{background:rgba(61,214,140,.12);color:#6ee7b7}
+.ch-3 .l-num{background:rgba(167,139,250,.15);color:#c4b5fd}
+.ch-4 .l-num{background:rgba(56,189,248,.12);color:#7dd3fc}
+.ch-5 .l-num{background:rgba(244,114,182,.12);color:#f9a8d4}
+.ch-6 .l-num{background:rgba(251,146,60,.12);color:#fdba74}
+.ch-7 .l-num{background:rgba(61,214,140,.12);color:#6ee7b7}
+.ch-8 .l-num{background:rgba(251,191,36,.12);color:#fde68a}
+.ch-9 .l-num{background:rgba(248,113,113,.12);color:#fca5a5}
+
+.l-text{
+  font-size:.88rem;
+  color:#bcc2db;
+  line-height:1.5;
+  font-weight:500;
+}
+
+/* Prompt block */
+.prompt-wrap{
+  padding:14px 16px 16px;
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+}
+.prompt-wrap:last-child{border-bottom:none}
+.prompt-label{
+  font-size:.68rem;
+  font-weight:800;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+  color:var(--cyan);
+  margin-bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.prompt-label::before{
+  content:"";
+  display:inline-block;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--cyan);
+  flex-shrink:0;
+}
+.prompt-block{
+  position:relative;
+  background:#080a12;
+  border:1px solid rgba(34,211,238,.2);
+  border-radius:10px;
+  padding:14px 14px 14px 46px;
+  font-family:"Consolas","Courier New",monospace;
+  font-size:.82rem;
+  color:#a5f3fc;
+  line-height:1.75;
+  white-space:pre-wrap;
+  word-break:break-word;
+  direction:rtl;
+  text-align:right;
+}
+.copy-btn{
+  position:absolute;
+  top:10px;
+  left:10px;
+  background:rgba(34,211,238,.1);
+  color:#67e8f9;
+  border:1px solid rgba(34,211,238,.2);
+  border-radius:6px;
+  padding:4px 10px;
+  font-size:.72rem;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .15s, color .15s;
+  white-space:nowrap;
+  font-family:"Segoe UI",system-ui,sans-serif;
+  letter-spacing:.3px;
+}
+.copy-btn:hover{background:rgba(34,211,238,.2);color:#e0f9ff}
+.copy-btn.copied{background:rgba(61,214,140,.15);color:#6ee7b7;border-color:rgba(61,214,140,.3)}
+
+/* Footer */
+footer{
+  text-align:center;
+  padding:24px 20px;
+  color:var(--muted);
+  font-size:.8rem;
+  border-top:1px solid var(--border);
+}
+
+/* Responsive */
+@media(max-width:480px){
+  .hero{padding:36px 16px 40px}
+  .hero h1{font-size:1.65rem}
+  .hero p{font-size:.88rem}
+  .wrap{padding:28px 12px 60px}
+  .meta-chip{font-size:.76rem;padding:5px 10px}
+  .stats{gap:8px}
+  .stat-num{font-size:1.4rem}
+  .stat{padding:14px 8px}
+  .ch-num{width:42px;font-size:.65rem}
+  .ch-title{font-size:.9rem}
+  .ch-count,.ch-dur{display:none}
+  .lesson{padding:10px 12px 10px 10px;gap:10px}
+  .l-text{font-size:.83rem}
+  .prompt-block{font-size:.76rem;padding:12px 12px 12px 42px}
+}
+</style>
+</head>
+<body>
+
+<div class="prog"><div class="prog-fill" id="pf"></div></div>
+
+<div class="hero">
+  <div class="badge">&#x1F4DA; סילבוס הקורס</div>
+  <h1>בוט טלגרם עם Claude Code</h1>
+  <p>תבנה מאפס סוכן שמנהל לך פגישות — ישירות מטלגרם</p>
+  <div class="meta-row">
+    <div class="meta-chip">&#x1F4D6; 9 שיעורים</div>
+    <div class="meta-chip">&#x1F4CB; 5 פרומפטים להעתקה</div>
+    <div class="meta-chip">&#x23F1;&#xFE0F; ~55 דקות</div>
+    <div class="meta-chip">&#x2705; בלי ידע מוקדם</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">9</div>
+      <div class="stat-label">שיעורים</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">5</div>
+      <div class="stat-label">פרומפטים</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">~55</div>
+      <div class="stat-label">דקות</div>
+    </div>
+  </div>
+
+  <div class="divider">תוכן עניינים</div>
+
+  <!-- CH1 -->
+  <div class="chapter ch-1" id="c1">
+    <div class="chapter-head" onclick="toggle('c1')">
+      <div class="ch-num">01</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 1</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F44B; פתיחה</div>
+          <div class="ch-meta">
+            <div class="ch-dur">3 דק'</div>
+            <div class="ch-count">1 שיעור</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="lessons">
+      <div class="lesson">
+        <div class="l-num">1</div>
+        <div class="l-text">מה נבנה היום — הדגמת הסוכן הגמור</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH2 -->
+  <div class="chapter ch-2" id="c2">
+    <div class="chapter-head" onclick="toggle('c2')">
+      <div class="ch-num">02</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 2</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F6E0;&#xFE0F; הכלים</div>
+          <div class="ch-meta">
+            <div class="ch-dur">4 דק'</div>
+            <div class="ch-count">2 שיעורים</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="lessons">
+      <div class="lesson">
+        <div class="l-num">1</div>
+        <div class="l-text">מה זה Claude Code ולמה זה שונה מ-Claude רגיל</div>
+      </div>
+      <div class="lesson">
+        <div class="l-num">2</div>
+        <div class="l-text">אתם האדריכל, Claude Code הוא הקבלן</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH3 -->
+  <div class="chapter ch-3" id="c3">
+    <div class="chapter-head" onclick="toggle('c3')">
+      <div class="ch-num">03</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 3</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F4C4; CLAUDE.md</div>
+          <div class="ch-meta">
+            <div class="ch-dur">5 דק'</div>
+            <div class="ch-count">2 שיעורים</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="lessons">
+      <div class="lesson">
+        <div class="l-num">1</div>
+        <div class="l-text">מה זה CLAUDE.md ולמה הוא קריטי</div>
+      </div>
+      <div class="lesson">
+        <div class="l-num">2</div>
+        <div class="l-text">מה כותבים בו: Stack, כללים, מבנה, .env</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH4 -->
+  <div class="chapter ch-4" id="c4">
+    <div class="chapter-head" onclick="toggle('c4')">
+      <div class="ch-num">04</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 4</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F5FA;&#xFE0F; ארכיטקטורה</div>
+          <div class="ch-meta">
+            <div class="ch-dur">5 דק'</div>
+            <div class="ch-count">2 שיעורים</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="lessons">
+      <div class="lesson">
+        <div class="l-num">1</div>
+        <div class="l-text">איך הכל מתחבר: טלגרם &#x2192; Claude &#x2192; Gmail &#x2192; Calendar</div>
+      </div>
+      <div class="lesson">
+        <div class="l-num">2</div>
+        <div class="l-text">למה Gmail ו-ICS ולא Calendar API ישיר</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH5 -->
+  <div class="chapter ch-5" id="c5">
+    <div class="chapter-head" onclick="toggle('c5')">
+      <div class="ch-num">05</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 5</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F680; הקמה</div>
+          <div class="ch-meta">
+            <div class="ch-dur">7 דק'</div>
+            <div class="ch-count">3 שיעורים + פרומפט</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="lessons">
+      <div class="lesson">
+        <div class="l-num">1</div>
+        <div class="l-text">קישור תיקייה ל-Claude Code</div>
+      </div>
+      <div class="lesson">
+        <div class="l-num">2</div>
+        <div class="l-text">יצירת בוט ב-BotFather וקבלת Token</div>
+      </div>
+      <div class="lesson">
+        <div class="l-num">3</div>
+        <div class="l-text">קובץ .env — שמירת סודות בטוחה</div>
+      </div>
+      <div class="prompt-wrap">
+        <div class="prompt-label">פרומפט 1 — הגדרת .env</div>
+        <div class="prompt-block" id="p1">קיבלתי Telegram Bot Token מ-BotFather. צור קובץ .env עם מקום לכל המשתני סביבה שנצטרך: TELEGRAM_TOKEN, ANTHROPIC_API_KEY, AGENT_EMAIL, AGENT_EMAIL_PASSWORD. צור גם .env.example ללא הערכים האמיתיים וודא שה-.env נמצא ב-.gitignore.<button class="copy-btn" id="btn1" onclick="copyPrompt('p1','btn1')">העתק</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH6 -->
+  <div class="chapter ch-6" id="c6">
+    <div class="chapter-head" onclick="toggle('c6')">
+      <div class="ch-num">06</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 6</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x270F;&#xFE0F; CLAUDE.md ומבנה הפרויקט</div>
+          <div class="ch-meta">
+            <div class="ch-dur">5 דק'</div>
+            <div class="ch-count">2 שיעורים + פרומפט</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="lessons">
+      <div class="lesson">
+        <div class="l-num">1</div>
+        <div class="l-text">הפרומפט הראשון — מגדירים את הפרויקט ל-Claude Code</div>
+      </div>
+      <div class="lesson">
+        <div class="l-num">2</div>
+        <div class="l-text">בדיקת ה-CLAUDE.md שנוצר</div>
+      </div>
+      <div class="prompt-wrap">
+        <div class="prompt-label">פרומפט 2 — יצירת CLAUDE.md</div>
+        <div class="prompt-block" id="p2">אנחנו מתחילים פרויקט חדש שנקרא telegram-calendar-bot. אני רוצה לבנות בוט טלגרם שפועל כעוזר אישי לניהול יומן Google Calendar. הבוט יהיה כתוב ב-Node.js עם ספריית Telegraf, ישתמש ב-Anthropic API עם מודל Claude כמוח, ויתקשר עם Google Calendar על ידי שליחת מיילים עם ICS invites דרך Gmail ייעודי. צור לי: (1) CLAUDE.md מפורט שיסביר לך את הפרויקט בכל שיחה חדשה, (2) מבנה תיקיות מסודר לפרויקט.<button class="copy-btn" id="btn2" onclick="copyPrompt('p2','btn2')">העתק</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH7 -->
+  <div class="chapter ch-7" id="c7">
+    <div class="chapter-head" onclick="toggle('c7')">
+      <div class="ch-num">07</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 7</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F916; בניית הבוט הבסיסי</div>
+          <div class="ch-meta">
+            <div class="ch-dur">8 דק'</div>
+            <div class="ch-count">3 שיעורים + פרומפט</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="lessons">
+      <div class="lesson">
+        <div class="l-num">1</div>
+        <div class="l-text">כותבים את index.js — הלב של הבוט</div>
+      </div>
+      <div class="lesson">
+        <div class="l-num">2</div>
+        <div class="l-text">התקנת packages והרצה ראשונה</div>
+      </div>
+      <div class="lesson">
+        <div class="l-num">3</div>
+        <div class="l-text">הרגע הראשון: שולחים &#x201C;שלום&#x201D; ומקבלים תגובה</div>
+      </div>
+      <div class="prompt-wrap">
+        <div class="prompt-label">פרומפט 3 — בניית הבוט</div>
+        <div class="prompt-block" id="p3">בנה את קובץ index.js הראשי של הפרויקט. הבוט צריך: (1) להתחבר לטלגרם עם Telegraf, (2) לקבל כל הודעת טקסט מהמשתמש, (3) לשלוח אותה ל-Claude API עם system prompt של עוזר יומן אישי שעונה בעברית, (4) להחזיר את התשובה בחזרה לטלגרם. השתמש במודל claude-sonnet-4-20250514. כלול גם טיפול בשגיאות בסיסי. אחרי שתסיים — ספר לי אילו packages צריך להתקין.<button class="copy-btn" id="btn3" onclick="copyPrompt('p3','btn3')">העתק</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH8 -->
+  <div class="chapter ch-8" id="c8">
+    <div class="chapter-head" onclick="toggle('c8')">
+      <div class="ch-num">08</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 8</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x1F4C5; הוספת ניהול יומן</div>
+          <div class="ch-meta">
+            <div class="ch-dur">8 דק'</div>
+            <div class="ch-count">3 שיעורים + פרומפט</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="lessons">
+      <div class="lesson">
+        <div class="l-num">1</div>
+        <div class="l-text">הכנת Gmail ייעודי + App Password</div>
+      </div>
+      <div class="lesson">
+        <div class="l-num">2</div>
+        <div class="l-text">הוספת יכולת קביעת פגישות</div>
+      </div>
+      <div class="lesson">
+        <div class="l-num">3</div>
+        <div class="l-text">בדיקה חיה: &#x201C;תקבע לי פגישה מחר בעשר&#x201D;</div>
+      </div>
+      <div class="prompt-wrap">
+        <div class="prompt-label">פרומפט 4 — הוספת יומן</div>
+        <div class="prompt-block" id="p4">הוסף ל-index.js יכולת לנהל יומן. כשהמשתמש מבקש לקבוע פגישה — הסוכן צריך לשלוח מייל מ-AGENT_EMAIL אל [המייל שלי] עם ICS invite. השתמש ב-nodemailer. ה-ICS צריך לכלול: כותרת הפגישה, תאריך ושעה, משך של שעה כברירת מחדל, וקישור Google Meet. הוסף גם יכולת לענות על 'מה יש לי ביומן' עם תשובה שמסבירה שהוא יכול לראות פגישות שהוא קבע.<button class="copy-btn" id="btn4" onclick="copyPrompt('p4','btn4')">העתק</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH9 -->
+  <div class="chapter ch-9" id="c9">
+    <div class="chapter-head" onclick="toggle('c9')">
+      <div class="ch-num">09</div>
+      <div class="ch-info">
+        <div class="ch-label">פרק 9</div>
+        <div class="ch-row">
+          <div class="ch-title">&#x26A1; שדרוג + מה הלאה</div>
+          <div class="ch-meta">
+            <div class="ch-dur">5 דק'</div>
+            <div class="ch-count">3 שיעורים + פרומפט</div>
+            <div class="arrow">&#x25BE;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="lessons">
+      <div class="lesson">
+        <div class="l-num">1</div>
+        <div class="l-text">שדרוג System Prompt — לתת לבוט אישיות</div>
+      </div>
+      <div class="lesson">
+        <div class="l-num">2</div>
+        <div class="l-text">איך מעלים לאוויר: Railway / Render</div>
+      </div>
+      <div class="lesson">
+        <div class="l-num">3</div>
+        <div class="l-text">רעיונות להמשך: WhatsApp, תזכורות, Notion</div>
+      </div>
+      <div class="prompt-wrap">
+        <div class="prompt-label">פרומפט 5 — שדרוג System Prompt</div>
+        <div class="prompt-block" id="p5">שדרג את ה-system prompt של הסוכן. הוא צריך לדעת: שמו הוא CalBot, הוא עוזר יומן אישי מקצועי. התאריך והשעה הנוכחיים מועברים אליו דינמית בכל הודעה. הוא יכול: לקבוע פגישות, לשלוח תזכורות, לבטל אירועים, לענות על שאלות לגבי היומן. הוא עונה בעברית, קצר ולעניין, ומאשר כל פעולה לפני שמבצע אותה.<button class="copy-btn" id="btn5" onclick="copyPrompt('p5','btn5')">העתק</button></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>בוט טלגרם עם Claude Code &middot; סילבוס הקורס</footer>
+
+<script>
+// Scroll progress bar
+window.addEventListener('scroll', function() {
+  var h = document.documentElement;
+  var p = (h.scrollTop || document.body.scrollTop) / ((h.scrollHeight || document.body.scrollHeight) - h.clientHeight) * 100;
+  document.getElementById('pf').style.width = Math.min(p, 100) + '%';
+});
+
+// Accordion — one open at a time
+function toggle(id) {
+  var el = document.getElementById(id);
+  var open = el.classList.contains('open');
+  document.querySelectorAll('.chapter').forEach(function(c) { c.classList.remove('open'); });
+  if (!open) el.classList.add('open');
+}
+
+// Copy prompt — reads text content, strips the button text
+function copyPrompt(blockId, btnId) {
+  var block = document.getElementById(blockId);
+  var btn = document.getElementById(btnId);
+  // Get text without the button label
+  var text = '';
+  block.childNodes.forEach(function(node) {
+    if (node.nodeType === Node.TEXT_NODE) text += node.textContent;
+  });
+  text = text.trim();
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = '&#10003; הועתק';
+    btn.innerHTML = '&#x2713; הועתק';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = 'העתק';
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(function() {
+    // Fallback for older browsers
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.innerHTML = '&#x2713; הועתק';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = 'העתק';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// Entrance animations
+var obs = new IntersectionObserver(function(en) {
+  en.forEach(function(e) {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.06 });
+
+document.querySelectorAll('.chapter, .stat').forEach(function(el, i) {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(14px)';
+  el.style.transition = 'opacity .38s ease ' + (i * 0.045) + 's, transform .38s ease ' + (i * 0.045) + 's';
+  obs.observe(el);
+});
+</script>
+</body>
+</html>
